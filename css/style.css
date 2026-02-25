@@ -1,0 +1,623 @@
+/* --- TRADING TERMINAL AESTHETICS --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Deep blacks and sharp greys */
+    --bg-base: #050507;
+    --bg-panel: #0a0a0d;
+    --bg-input: #121216;
+    --bg-hover: #1a1a20;
+
+    --border-dim: #1d1d24;
+    --border-bright: #333340;
+
+    /* Neon Accents */
+    --accent-primary: #00ffcc;
+    /* Cyan */
+    --accent-secondary: #ff0055;
+    /* Magenta */
+    --accent-tertiary: #ccff00;
+    /* Lime */
+
+    /* Text */
+    --text-main: #ffffff;
+    --text-muted: #6b6b80;
+    --text-alert: #ff3333;
+
+    /* Greeks Config */
+    --color-payoff: #ffffff;
+    --color-price: #00ffcc;
+    --color-delta: #33ff33;
+    --color-gamma: #cc33ff;
+    --color-vega: #ffcc00;
+    --color-theta: #ff3333;
+    --color-rho: #00ccff;
+
+    --font-mono: 'Inter', monospace;
+}
+
+body {
+    font-family: var(--font-mono);
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    overflow: hidden;
+    height: 100vh;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-bright);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+}
+
+/* --- TERMINAL GRID LAYOUT --- */
+.terminal-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr 300px;
+    grid-template-rows: 50px 1fr;
+    grid-template-areas:
+        "header header header"
+        "left center right";
+    height: 100vh;
+    width: 100vw;
+}
+
+/* --- HEADER --- */
+.terminal-header {
+    grid-area: header;
+    background-color: var(--bg-base);
+    border-bottom: 1px solid var(--border-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-accent {
+    color: var(--accent-primary);
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 2px;
+}
+
+.terminal-header h1 {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.stat-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--bg-input);
+    padding: 4px 10px;
+    border: 1px solid var(--border-dim);
+}
+
+.stat-label {
+    color: var(--text-muted);
+}
+
+.status-ok {
+    color: var(--accent-primary);
+}
+
+/* --- PANELS --- */
+.panel {
+    background-color: var(--bg-panel);
+    border-right: 1px solid var(--border-dim);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.panel:last-child {
+    border-right: none;
+    border-left: 1px solid var(--border-dim);
+}
+
+.left-panel {
+    grid-area: left;
+}
+
+.center-panel {
+    grid-area: center;
+    background-color: var(--bg-base);
+    overflow-y: auto;
+}
+
+.right-panel {
+    grid-area: right;
+}
+
+.panel-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-base);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.secondary-header {
+    border-top: 1px solid var(--border-dim);
+}
+
+.panel-header h2 {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
+.leg-count {
+    background: var(--accent-primary);
+    color: var(--bg-base);
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.panel-section {
+    padding: 20px;
+}
+
+.section-title {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+}
+
+/* --- FORM CONTROLS --- */
+.form-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.input-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.input-cell.half {
+    width: calc(50% - 5px);
+}
+
+.input-cell.full {
+    width: 100%;
+}
+
+.input-cell label {
+    font-size: 9px;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.sharp-input,
+.sharp-select {
+    background: var(--bg-input);
+    border: 1px solid var(--border-dim);
+    color: var(--text-main);
+    padding: 8px 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    outline: none;
+    transition: all 0.2s;
+    border-radius: 0;
+    /* No bubbly borders */
+    width: 100%;
+}
+
+.sharp-input:focus,
+.sharp-select:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 5px rgba(0, 255, 204, 0.2);
+}
+
+/* Hide arrow for number input */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.range-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.range-group .sharp-input {
+    width: 45%;
+    text-align: center;
+}
+
+.range-group .separator {
+    color: var(--text-muted);
+    font-size: 10px;
+}
+
+.sharp-btn {
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    color: var(--text-main);
+    padding: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    width: 100%;
+}
+
+.sharp-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.action-btn {
+    margin-top: 5px;
+    background: var(--bg-input);
+}
+
+/* --- PORTFOLIO LEGS --- */
+.legs-list {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 20px;
+    gap: 8px;
+}
+
+.leg-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-base);
+    border: 1px solid var(--border-dim);
+    padding: 8px 12px;
+    border-left: 2px solid var(--border-bright);
+}
+
+.leg-row:hover {
+    border-color: var(--border-bright);
+}
+
+.leg-row.Call {
+    border-left-color: var(--color-price);
+}
+
+.leg-row.Put {
+    border-left-color: var(--color-theta);
+}
+
+.leg-text {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.leg-qty {
+    color: var(--text-muted);
+}
+
+.del-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.del-btn:hover {
+    color: var(--text-alert);
+}
+
+/* --- ACTIVE METRICS TOGGLES --- */
+.metrics-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.metric-toggle {
+    display: block;
+    cursor: pointer;
+}
+
+.metric-toggle input {
+    display: none;
+}
+
+.toggle-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-input);
+    border: 1px solid var(--border-dim);
+    padding: 10px 15px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+/* Colors for active toggles */
+.metric-toggle input:checked+.toggle-box {
+    color: var(--bg-base);
+}
+
+.tgl-payoff input:checked+.toggle-box {
+    background: var(--color-payoff);
+    border-color: var(--color-payoff);
+    color: var(--bg-base);
+}
+
+.tgl-price input:checked+.toggle-box {
+    background: var(--color-price);
+    border-color: var(--color-price);
+    color: var(--bg-base);
+}
+
+.tgl-delta input:checked+.toggle-box {
+    background: var(--color-delta);
+    border-color: var(--color-delta);
+    color: var(--bg-base);
+}
+
+.tgl-gamma input:checked+.toggle-box {
+    background: var(--color-gamma);
+    border-color: var(--color-gamma);
+    color: var(--text-main);
+}
+
+.tgl-vega input:checked+.toggle-box {
+    background: var(--color-vega);
+    border-color: var(--color-vega);
+    color: var(--bg-base);
+}
+
+.tgl-theta input:checked+.toggle-box {
+    background: var(--color-theta);
+    border-color: var(--color-theta);
+    color: var(--text-main);
+}
+
+.tgl-rho input:checked+.toggle-box {
+    background: var(--color-rho);
+    border-color: var(--color-rho);
+    color: var(--bg-base);
+}
+
+.metric-toggle:hover .toggle-box {
+    border-color: var(--border-bright);
+}
+
+/* --- CHART AREA --- */
+.chart-header {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-dim);
+}
+
+.chart-title h2 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: 1px;
+}
+
+.chart-title .subtitle {
+    font-size: 10px;
+    color: var(--accent-primary);
+    letter-spacing: 1px;
+}
+
+.chart-wrapper {
+    position: relative;
+    padding: 20px;
+    height: 450px;
+    min-height: 350px;
+}
+
+/* --- SLIDER CONTROLS --- */
+.slider-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.slider-input-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 45%;
+}
+
+.sharp-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-dim);
+    outline: none;
+}
+
+.sharp-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 16px;
+    background: var(--accent-primary);
+    cursor: pointer;
+    border-radius: 0;
+    /* Keep it blocky */
+}
+
+/* --- 3RD ORDER GREEKS TOGGLES --- */
+.tgl-speed input:checked+.toggle-box {
+    background: #ffaa00;
+    border-color: #ffaa00;
+    color: var(--bg-base);
+}
+
+.tgl-speed input:checked+.toggle-box .math-sub {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.tgl-zomma input:checked+.toggle-box {
+    background: #00aaff;
+    border-color: #00aaff;
+    color: var(--bg-base);
+}
+
+.tgl-zomma input:checked+.toggle-box .math-sub {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.tgl-color input:checked+.toggle-box {
+    background: #ff00aa;
+    border-color: #ff00aa;
+    color: var(--bg-base);
+}
+
+.tgl-color input:checked+.toggle-box .math-sub {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.tgl-ultima input:checked+.toggle-box {
+    background: #aaff00;
+    border-color: #aaff00;
+    color: var(--bg-base);
+}
+
+.tgl-ultima input:checked+.toggle-box .math-sub {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+/* --- 2ND ORDER CROSS GREEKS TOGGLES (Vanna, Volga) --- */
+.tgl-vanna input:checked+.toggle-box {
+    background: #ff6600;
+    border-color: #ff6600;
+    color: var(--bg-base);
+}
+
+.tgl-vanna input:checked+.toggle-box .math-sub {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.tgl-volga input:checked+.toggle-box {
+    background: #aa00ff;
+    border-color: #aa00ff;
+    color: var(--text-main);
+}
+
+.tgl-volga input:checked+.toggle-box .math-sub {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* --- MATH NOTATION --- */
+.math-sub {
+    font-size: 11px;
+    font-family: "Times New Roman", Times, serif;
+    font-style: italic;
+    color: var(--text-dim);
+    letter-spacing: 0;
+}
+
+.metric-toggle input:checked+.toggle-box .math-sub {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+/* --- 3D SURFACE SECTION --- */
+.surface3d-section {
+    border-top: 1px solid var(--border-dim);
+}
+
+.surface3d-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.surface3d-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.surface3d-controls .input-cell {
+    min-width: 110px;
+}
+
+.surface3d-controls label {
+    font-size: 9px;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.surface3d-controls .sharp-select {
+    padding: 6px 8px;
+    font-size: 11px;
+}
+
+.surface3d-container {
+    width: 100%;
+    height: 500px;
+    min-height: 400px;
+    background: var(--bg-base);
+}
+
+/* Barrier level visible transition */
+.barrier-level-cell {
+    transition: all 0.2s ease;
+}

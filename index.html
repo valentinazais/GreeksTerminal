@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option Greeks Terminal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+
+<body>
+    <div class="terminal-grid">
+
+        <!-- TOP HEADER -->
+        <header class="terminal-header">
+            <div class="logo-area">
+                <span class="logo-accent">///</span>
+                <h1>GREEKS TERMINAL</h1>
+            </div>
+            <div class="header-stats">
+                <div class="stat-box">
+                    <span class="stat-label">STATUS</span>
+                    <span class="stat-val status-ok">CONNECTED</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- LEFT PANEL: POSITIONS -->
+        <aside class="panel left-panel">
+            <div class="panel-header">
+                <h2>PORTFOLIO LEGS</h2>
+                <span class="leg-count" id="leg-count-badge">0</span>
+            </div>
+
+            <div class="legs-list" id="legs-container">
+                <!-- Javascript will inject leg rows here -->
+            </div>
+
+            <div class="panel-section add-leg-form"
+                style="border-bottom: 1px solid var(--border-dim); padding-bottom: 15px; margin-bottom: 15px;">
+                <h3 class="section-title">STRUCTURED PRODUCT</h3>
+                <div class="form-row" style="align-items: flex-end;">
+                    <div class="input-cell" style="flex-grow: 1;">
+                        <select id="structured-product-select" class="sharp-select">
+                            <option value="straddle">STRADDLE</option>
+                            <option value="strangle">STRANGLE</option>
+                            <option value="bull_call">BULL CALL SPREAD</option>
+                            <option value="bear_put">BEAR PUT SPREAD</option>
+                            <option value="iron_condor">IRON CONDOR</option>
+                        </select>
+                    </div>
+                    <button id="btn-apply-structure" class="sharp-btn action-btn"
+                        style="width: auto; padding: 10px 15px; margin-top: 0;">APPLY</button>
+                </div>
+            </div>
+
+            <div class="panel-section add-leg-form">
+                <h3 class="section-title">NEW POSITION</h3>
+                <div class="form-grid">
+                    <div class="input-cell half">
+                        <label>TYPE</label>
+                        <select id="new-leg-type" class="sharp-select">
+                            <option value="Call">CALL</option>
+                            <option value="Put">PUT</option>
+                        </select>
+                    </div>
+                    <div class="input-cell half">
+                        <label>POS</label>
+                        <select id="new-leg-position" class="sharp-select">
+                            <option value="Long">LONG</option>
+                            <option value="Short">SHORT</option>
+                        </select>
+                    </div>
+                    <div class="input-cell full">
+                        <label>STRIKE (K)</label>
+                        <div class="slider-input-group">
+                            <input type="range" id="new-leg-strike-range" class="sharp-range" min="50" max="150"
+                                step="1" value="100">
+                            <input type="number" id="new-leg-strike" class="sharp-input" value="100.00" step="1">
+                        </div>
+                    </div>
+                    <div class="input-cell full">
+                        <label>BARRIER</label>
+                        <select id="new-leg-barrier-type" class="sharp-select">
+                            <option value="None">NONE</option>
+                            <option value="UpIn">UP-AND-IN ↑IN</option>
+                            <option value="UpOut">UP-AND-OUT ↑OUT</option>
+                            <option value="DownIn">DOWN-AND-IN ↓IN</option>
+                            <option value="DownOut">DOWN-AND-OUT ↓OUT</option>
+                        </select>
+                    </div>
+                    <div class="input-cell full barrier-level-cell" style="display: none;">
+                        <label>BARRIER LEVEL (H)</label>
+                        <div class="slider-input-group">
+                            <input type="range" id="new-leg-barrier-range" class="sharp-range" min="10" max="500"
+                                step="1" value="120">
+                            <input type="number" id="new-leg-barrier" class="sharp-input" value="120" step="1">
+                        </div>
+                    </div>
+                    <button id="add-leg-btn" class="sharp-btn action-btn">APPEND LEG</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER PANEL: CHART CANVAS -->
+        <main class="panel center-panel">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <h2>ANALYTICS ENGINE</h2>
+                    <span class="subtitle">MULTI-METRIC OVERLAY // UNDERLYING S</span>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="greeksChart"></canvas>
+            </div>
+
+            <!-- 3D GREEK SURFACE -->
+            <div class="surface3d-section">
+                <div class="chart-header surface3d-header">
+                    <div class="chart-title">
+                        <h2>3D GREEK SURFACE</h2>
+                        <span class="subtitle">METRIC × SPOT × VARIABLE</span>
+                    </div>
+                    <div class="surface3d-controls">
+                        <div class="input-cell">
+                            <label>GREEK</label>
+                            <select id="surface-metric" class="sharp-select">
+                                <option value="payoff">PAYOFF</option>
+                                <option value="price">PRICE</option>
+                                <option value="delta" selected>DELTA</option>
+                                <option value="gamma">GAMMA</option>
+                                <option value="vega">VEGA</option>
+                                <option value="theta">THETA</option>
+                                <option value="rho">RHO</option>
+                                <option value="speed">SPEED</option>
+                                <option value="zomma">ZOMMA</option>
+                                <option value="color">COLOR</option>
+                                <option value="ultima">ULTIMA</option>
+                                <option value="vanna">VANNA</option>
+                                <option value="volga">VOLGA</option>
+                            </select>
+                        </div>
+                        <div class="input-cell">
+                            <label>2ND AXIS</label>
+                            <select id="surface-variable" class="sharp-select">
+                                <option value="timeToMaturity" selected>EXPIRY T</option>
+                                <option value="volatility">VOL σ</option>
+                                <option value="riskFreeRate">RATE R</option>
+                                <option value="dividendYield">YIELD Q</option>
+                            </select>
+                        </div>
+                        <button id="btn-generate-surface" class="sharp-btn action-btn"
+                            style="width: auto; padding: 8px 16px; margin-top: auto;">GENERATE</button>
+                    </div>
+                </div>
+                <div id="surface3d" class="surface3d-container"></div>
+            </div>
+        </main>
+
+        <!-- RIGHT PANEL: ENVIRONMENT & SELECTORS -->
+        <aside class="panel right-panel">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>ENVIRONMENT</h2>
+                <button id="btn-env-reset" class="action-btn"
+                    style="padding: 2px 8px; font-size: 0.7rem; background: var(--panel-bg); color: var(--text-muted); border: 1px solid var(--border-dim); cursor: pointer;">RESET</button>
+            </div>
+
+            <div class="panel-section global-params">
+                <div class="input-cell full">
+                    <label>SPOT HORIZON (MIN - MAX)</label>
+                    <div class="range-group">
+                        <div class="slider-input-col">
+                            <input type="range" id="global-min-price-range" class="sharp-range" min="10" max="500"
+                                step="1" value="50">
+                            <input type="number" id="global-min-price" class="sharp-input" value="50" step="1">
+                        </div>
+                        <span class="separator">-</span>
+                        <div class="slider-input-col">
+                            <input type="range" id="global-max-price-range" class="sharp-range" min="10" max="500"
+                                step="1" value="150">
+                            <input type="number" id="global-max-price" class="sharp-input" value="150" step="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-cell full">
+                    <label>EXPIRY T (YRS)</label>
+                    <div class="slider-input-group">
+                        <input type="range" id="global-t-range" class="sharp-range" min="0.01" max="5.00" step="0.01"
+                            value="1.00">
+                        <input type="number" id="global-t" class="sharp-input" value="1.00" step="0.01">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-cell half">
+                        <label>RATE (R) %</label>
+                        <div class="slider-input-group">
+                            <input type="range" id="global-r-range" class="sharp-range" min="0.0" max="20.0" step="0.1"
+                                value="5.0">
+                            <input type="number" id="global-r" class="sharp-input" value="5.0" step="0.1">
+                        </div>
+                    </div>
+                    <div class="input-cell half">
+                        <label>YIELD (Q) %</label>
+                        <div class="slider-input-group">
+                            <input type="range" id="global-q-range" class="sharp-range" min="0.0" max="20.0" step="0.1"
+                                value="0.0">
+                            <input type="number" id="global-q" class="sharp-input" value="0.0" step="0.1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-cell full">
+                    <label>VOLATILITY (σ) %</label>
+                    <div class="slider-input-group">
+                        <input type="range" id="global-v-range" class="sharp-range" min="1.0" max="100.0" step="0.1"
+                            value="20.0">
+                        <input type="number" id="global-v" class="sharp-input" value="20.0" step="0.1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-header secondary-header">
+                <h2>PARAMETER SWEEP</h2>
+            </div>
+
+            <div class="panel-section animation-controls">
+                <div class="form-row" style="align-items: flex-end;">
+                    <div class="input-cell" style="flex-grow: 1;">
+                        <label>ANIMATE VARIABLE</label>
+                        <select id="anim-param-select" class="sharp-select">
+                            <option value="t">EXPIRY T (YRS)</option>
+                            <option value="v">VOLATILITY (σ) %</option>
+                            <option value="r">RATE (R) %</option>
+                            <option value="q">YIELD (Q) %</option>
+                        </select>
+                    </div>
+                    <button id="anim-play-btn" class="sharp-btn action-btn"
+                        style="width: auto; padding: 10px 15px; margin-top: 0;">PLAY</button>
+                </div>
+            </div>
+
+            <div class="panel-header secondary-header">
+                <h2>ACTIVE METRICS</h2>
+            </div>
+
+            <div class="panel-section metrics-toggles">
+                <label class="metric-toggle tgl-payoff">
+                    <input type="checkbox" data-metric="payoff" checked>
+                    <span class="toggle-box">PAYOFF</span>
+                </label>
+                <label class="metric-toggle tgl-price">
+                    <input type="checkbox" data-metric="price">
+                    <span class="toggle-box">PRICE</span>
+                </label>
+                <label class="metric-toggle tgl-delta">
+                    <input type="checkbox" data-metric="delta">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>DELTA</span><span
+                            class="math-sub">∂V/∂S</span></span>
+                </label>
+                <label class="metric-toggle tgl-gamma">
+                    <input type="checkbox" data-metric="gamma">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>GAMMA</span><span
+                            class="math-sub">∂²V/∂S²</span></span>
+                </label>
+                <label class="metric-toggle tgl-vega">
+                    <input type="checkbox" data-metric="vega">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>VEGA</span><span
+                            class="math-sub">∂V/∂σ</span></span>
+                </label>
+                <label class="metric-toggle tgl-theta">
+                    <input type="checkbox" data-metric="theta">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>THETA</span><span
+                            class="math-sub">∂V/∂t</span></span>
+                </label>
+                <label class="metric-toggle tgl-rho">
+                    <input type="checkbox" data-metric="rho">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>RHO</span><span
+                            class="math-sub">∂V/∂r</span></span>
+                </label>
+
+                <div class="panel-header secondary-header"
+                    style="margin-top: 15px; margin-bottom: 10px; padding-bottom: 5px;">
+                    <h2 style="font-size: 0.70rem; color: var(--text-muted);">3RD ORDER GREEKS</h2>
+                </div>
+
+                <label class="metric-toggle tgl-speed">
+                    <input type="checkbox" data-metric="speed">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>SPEED</span><span
+                            class="math-sub">∂³V/∂S³</span></span>
+                </label>
+                <label class="metric-toggle tgl-zomma">
+                    <input type="checkbox" data-metric="zomma">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>ZOMMA</span><span
+                            class="math-sub">∂²V/∂S∂σ</span></span>
+                </label>
+                <label class="metric-toggle tgl-color">
+                    <input type="checkbox" data-metric="color">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>COLOR</span><span
+                            class="math-sub">∂³V/∂S²∂t</span></span>
+                </label>
+                <label class="metric-toggle tgl-ultima">
+                    <input type="checkbox" data-metric="ultima">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>ULTIMA</span><span
+                            class="math-sub">∂³V/∂σ³</span></span>
+                </label>
+
+                <div class="panel-header secondary-header"
+                    style="margin-top: 15px; margin-bottom: 10px; padding-bottom: 5px;">
+                    <h2 style="font-size: 0.70rem; color: var(--text-muted);">2ND ORDER CROSS</h2>
+                </div>
+
+                <label class="metric-toggle tgl-vanna">
+                    <input type="checkbox" data-metric="vanna">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>VANNA</span><span
+                            class="math-sub">∂²V/∂S∂σ</span></span>
+                </label>
+                <label class="metric-toggle tgl-volga">
+                    <input type="checkbox" data-metric="volga">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>VOLGA</span><span
+                            class="math-sub">∂²V/∂σ²</span></span>
+                </label>
+            </div>
+        </aside>
+
+    </div>
+
+    <script src="js/greeks.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
