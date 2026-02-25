@@ -543,8 +543,8 @@ input[type=number]::-webkit-outer-spin-button {
 
 /* --- 2ND ORDER CROSS GREEKS TOGGLES (Vanna, Volga) --- */
 .tgl-vanna input:checked+.toggle-box {
-    background: #ff6600;
-    border-color: #ff6600;
+    background: #ff6600 !important;
+    border-color: #ff6600 !important;
     color: var(--bg-base);
 }
 
@@ -553,8 +553,8 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .tgl-volga input:checked+.toggle-box {
-    background: #aa00ff;
-    border-color: #aa00ff;
+    background: #aa00ff !important;
+    border-color: #aa00ff !important;
     color: var(--text-main);
 }
 

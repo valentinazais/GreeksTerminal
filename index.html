@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Option Greeks Terminal</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=3">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
@@ -290,6 +290,24 @@
 
                 <div class="panel-header secondary-header"
                     style="margin-top: 15px; margin-bottom: 10px; padding-bottom: 5px;">
+                    <h2 style="font-size: 0.70rem; color: var(--text-muted);">2ND ORDER CROSS</h2>
+                </div>
+
+                <label class="metric-toggle tgl-vanna">
+                    <input type="checkbox" data-metric="vanna">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>VANNA</span><span
+                            class="math-sub">∂²V/∂S∂σ</span></span>
+                </label>
+                <label class="metric-toggle tgl-volga">
+                    <input type="checkbox" data-metric="volga">
+                    <span class="toggle-box"
+                        style="display: flex; justify-content: space-between; align-items: center;"><span>VOLGA</span><span
+                            class="math-sub">∂²V/∂σ²</span></span>
+                </label>
+
+                <div class="panel-header secondary-header"
+                    style="margin-top: 15px; margin-bottom: 10px; padding-bottom: 5px;">
                     <h2 style="font-size: 0.70rem; color: var(--text-muted);">3RD ORDER GREEKS</h2>
                 </div>
 
@@ -316,24 +334,6 @@
                     <span class="toggle-box"
                         style="display: flex; justify-content: space-between; align-items: center;"><span>ULTIMA</span><span
                             class="math-sub">∂³V/∂σ³</span></span>
-                </label>
-
-                <div class="panel-header secondary-header"
-                    style="margin-top: 15px; margin-bottom: 10px; padding-bottom: 5px;">
-                    <h2 style="font-size: 0.70rem; color: var(--text-muted);">2ND ORDER CROSS</h2>
-                </div>
-
-                <label class="metric-toggle tgl-vanna">
-                    <input type="checkbox" data-metric="vanna">
-                    <span class="toggle-box"
-                        style="display: flex; justify-content: space-between; align-items: center;"><span>VANNA</span><span
-                            class="math-sub">∂²V/∂S∂σ</span></span>
-                </label>
-                <label class="metric-toggle tgl-volga">
-                    <input type="checkbox" data-metric="volga">
-                    <span class="toggle-box"
-                        style="display: flex; justify-content: space-between; align-items: center;"><span>VOLGA</span><span
-                            class="math-sub">∂²V/∂σ²</span></span>
                 </label>
             </div>
         </aside>
