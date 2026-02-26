@@ -3,7 +3,7 @@
 Live app: [https://valentinazais.github.io/GreeksTerminal/](https://valentinazais.github.io/GreeksTerminal/)
 
 ## Overview
-Real-time option Greeks simulator running entirely in-browser via WebAssembly. C++ Black-Scholes engine compiled to WASM (Emscripten). Computes prices, payoffs, time value, 1st-order Greeks (Delta, Gamma, Theta, Vega, Rho), and 3rd-order Greeks (Speed, Zomma, Color, Ultima). Supports vanilla + barrier options (knock-in/knock-out). Interactive 2D overlay charts + 3D Greek surfaces.
+Real-time option Greeks simulator running entirely in-browser via WebAssembly. C++ Black-Scholes engine compiled to WASM through Emscripten. Computes prices, payoffs, time value, 1st-order Greeks (Delta, Gamma, Theta, Vega, Rho), 2nd-order Greeks (Vanna, Volga), and 3rd-order Greeks (Speed, Zomma, Color, Ultima). Supports vanilla and barrier options (knock-in/knock-out). Interactive 2D overlay charts and 3D Greek surfaces.
 
 ## Features
 - **Shared Parameters**: Spot range (min/max), T (expiry), r (risk-free rate), q (dividend yield), σ (volatility). Dual input (number/slider) with sync.
