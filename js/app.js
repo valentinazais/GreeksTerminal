@@ -1,14 +1,58 @@
 // --- WASM Helpers ---
-const BARRIER_TYPE_MAP = { 'None': 0, 'UpIn': 1, 'UpOut': 2, 'DownIn': 3, 'DownOut': 4 };
-const METRIC_INDICES = { price: 0, delta: 1, gamma: 2, theta: 3, vega: 4, rho: 5, payoff: 6, speed: 7, zomma: 8, color: 9, ultima: 10, vanna: 11, volga: 12 };
-const SEC_VAR_INDICES = { timeToMaturity: 0, volatility: 1, riskFreeRate: 2, dividendYield: 3 };
+const BARRIER_TYPE_MAP = {
+    None: 0,
+    UpIn: 1,
+    UpOut: 2,
+    DownIn: 3,
+    DownOut: 4
+};
 
-// Pack legs into a flat Float64Array for WASM (10 doubles per leg)
+const METRIC_INDICES = {
+    price: 0,
+    delta: 1,
+    gamma: 2,
+    theta: 3,
+    vega: 4,
+    rho: 5,
+    payoff: 6,
+    speed: 7,
+    zomma: 8,
+    color: 9,
+    ultima: 10,
+    vanna: 11,
+    volga: 12
+};
+
+const SEC_VAR_INDICES = {
+    timeToMaturity: 0,
+    volatility: 1,
+    riskFreeRate: 2,
+    dividendYield: 3
+};
+
+// --- Amundi-inspired palette ---
+const THEME = {
+    navy: '#00205B',
+    blue: '#00A3E0',
+    blueDark: '#0077A8',
+    blueLight: '#E5F6FC',
+    white: '#FFFFFF',
+    panel: '#F5F8FC',
+    grid: '#D9E2EC',
+    border: '#9DB2CA',
+    text: '#00205B',
+    muted: '#60738D',
+    alert: '#C54E5C'
+};
+
+// Pack legs into a flat Float64Array for WASM
 function packLegsForWasm(legs, global) {
     const arr = new Float64Array(legs.length * 10);
+
     legs.forEach((leg, i) => {
         const off = i * 10;
-        arr[off + 0] = leg.type === 'Call' ? 0 : 1;
+
+        arr[off] = leg.type === 'Call' ? 0 : 1;
         arr[off + 1] = leg.position === 'Long' ? 0 : 1;
         arr[off + 2] = leg.strike;
         arr[off + 3] = global.t;
@@ -19,14 +63,17 @@ function packLegsForWasm(legs, global) {
         arr[off + 8] = BARRIER_TYPE_MAP[leg.barrierType] || 0;
         arr[off + 9] = leg.barrierLevel || 0;
     });
+
     return arr;
 }
 
-// Allocate packed leg data in WASM heap, returns pointer
+// Allocate packed leg data in WASM heap
 function allocLegsInWasm(packedLegs) {
-    const nBytes = packedLegs.length * 8; // Float64
+    const nBytes = packedLegs.length * 8;
     const ptr = Module._malloc(nBytes);
+
     Module.HEAPF64.set(packedLegs, ptr / 8);
+
     return ptr;
 }
 
@@ -43,6 +90,7 @@ const STATE = {
             barrierLevel: 0
         }
     ],
+
     global: {
         minPrice: 50,
         maxPrice: 150,
@@ -52,6 +100,7 @@ const STATE = {
         q: 0.0,
         v: 0.20
     },
+
     activeMetrics: ['payoff'],
     chartData: null,
     isAnimating: false,
@@ -65,52 +114,102 @@ const btnAddLeg = document.getElementById('add-leg-btn');
 
 const elMinPrice = document.getElementById('global-min-price');
 const elMinPriceRange = document.getElementById('global-min-price-range');
+
 const elMaxPrice = document.getElementById('global-max-price');
 const elMaxPriceRange = document.getElementById('global-max-price-range');
+
 const elTInput = document.getElementById('global-t');
 const elTRange = document.getElementById('global-t-range');
+
 const elRInput = document.getElementById('global-r');
 const elRRange = document.getElementById('global-r-range');
+
 const elQInput = document.getElementById('global-q');
 const elQRange = document.getElementById('global-q-range');
+
 const elVInput = document.getElementById('global-v');
 const elVRange = document.getElementById('global-v-range');
 
 const elNewType = document.getElementById('new-leg-type');
 const elNewPos = document.getElementById('new-leg-position');
+
 const elNewStrike = document.getElementById('new-leg-strike');
 const elNewStrikeRange = document.getElementById('new-leg-strike-range');
+
 const elNewBarrierType = document.getElementById('new-leg-barrier-type');
 const elNewBarrier = document.getElementById('new-leg-barrier');
 const elNewBarrierRange = document.getElementById('new-leg-barrier-range');
+
 const elBarrierLevelCell = document.querySelector('.barrier-level-cell');
 
-const toggleCheckboxes = document.querySelectorAll('.metric-toggle input[type="checkbox"]');
+const toggleCheckboxes = document.querySelectorAll(
+    '.metric-toggle input[type="checkbox"]'
+);
 
 let chart = null;
 
+// --- Chart colors ---
 const METRIC_CONFIG = {
-    payoff: { color: '#ffffff', label: 'PAYOFF' },
-    price: { color: '#00ffcc', label: 'PRICE' },
-    delta: { color: '#33ff33', label: 'DELTA' },
-    gamma: { color: '#cc33ff', label: 'GAMMA' },
-    vega: { color: '#ffcc00', label: 'VEGA' },
-    theta: { color: '#ff3333', label: 'THETA' },
-    rho: { color: '#00ccff', label: 'RHO' },
-    speed: { color: '#ffaa00', label: 'SPEED' },
-    zomma: { color: '#00aaff', label: 'ZOMMA' },
-    color: { color: '#ff00aa', label: 'COLOR' },
-    ultima: { color: '#aaff00', label: 'ULTIMA' },
-    vanna: { color: '#ff6600', label: 'VANNA' },
-    volga: { color: '#aa00ff', label: 'VOLGA' }
+    payoff: {
+        color: '#00205B',
+        label: 'PAYOFF'
+    },
+    price: {
+        color: '#00A3E0',
+        label: 'PRICE'
+    },
+    delta: {
+        color: '#0077A8',
+        label: 'DELTA'
+    },
+    gamma: {
+        color: '#536FA8',
+        label: 'GAMMA'
+    },
+    vega: {
+        color: '#3C91BD',
+        label: 'VEGA'
+    },
+    theta: {
+        color: '#C54E5C',
+        label: 'THETA'
+    },
+    rho: {
+        color: '#69C4E5',
+        label: 'RHO'
+    },
+    speed: {
+        color: '#006C98',
+        label: 'SPEED'
+    },
+    zomma: {
+        color: '#2494C3',
+        label: 'ZOMMA'
+    },
+    color: {
+        color: '#536FA8',
+        label: 'COLOR'
+    },
+    ultima: {
+        color: '#75C9E5',
+        label: 'ULTIMA'
+    },
+    vanna: {
+        color: '#008BC3',
+        label: 'VANNA'
+    },
+    volga: {
+        color: '#3F5F99',
+        label: 'VOLGA'
+    }
 };
 
 const BARRIER_LABELS = {
-    'None': '',
-    'UpIn': '↑IN',
-    'UpOut': '↑OUT',
-    'DownIn': '↓IN',
-    'DownOut': '↓OUT'
+    None: '',
+    UpIn: '↑IN',
+    UpOut: '↑OUT',
+    DownIn: '↓IN',
+    DownOut: '↓OUT'
 };
 
 // --- Utilities ---
@@ -119,94 +218,218 @@ function generateId() {
 }
 
 let timeoutId;
+
 function debouncedCompute(delay = 50) {
-    if (timeoutId) clearTimeout(timeoutId);
+    if (timeoutId) {
+        clearTimeout(timeoutId);
+    }
+
     timeoutId = setTimeout(() => computeGreeks(), delay);
 }
 
 // --- Initialization & Binding ---
 function bindUIElements() {
-    const bindSyncedInput = (numEl, rangeEl, stateKey, isPercent = false) => {
-        const updateState = (val) => {
-            if (isNaN(val)) return;
-            STATE.global[stateKey] = isPercent ? val / 100 : val;
+    const bindSyncedInput = (
+        numEl,
+        rangeEl,
+        stateKey,
+        isPercent = false
+    ) => {
+        const updateState = (value) => {
+            if (Number.isNaN(value)) {
+                return;
+            }
+
+            STATE.global[stateKey] = isPercent
+                ? value / 100
+                : value;
+
             debouncedCompute();
         };
 
-        numEl.addEventListener('input', (e) => {
-            let val = parseFloat(e.target.value);
-            if (!isNaN(val)) rangeEl.value = val;
-            updateState(val);
+        numEl.addEventListener('input', (event) => {
+            const value = parseFloat(event.target.value);
+
+            if (!Number.isNaN(value)) {
+                rangeEl.value = value;
+            }
+
+            updateState(value);
         });
 
-        rangeEl.addEventListener('input', (e) => {
-            let val = parseFloat(e.target.value);
-            if (!isNaN(val)) numEl.value = val;
-            updateState(val);
+        rangeEl.addEventListener('input', (event) => {
+            const value = parseFloat(event.target.value);
+
+            if (!Number.isNaN(value)) {
+                numEl.value = value;
+            }
+
+            updateState(value);
         });
     };
 
-    bindSyncedInput(elMinPrice, elMinPriceRange, 'minPrice');
-    bindSyncedInput(elMaxPrice, elMaxPriceRange, 'maxPrice');
-    bindSyncedInput(elTInput, elTRange, 't');
-    bindSyncedInput(elRInput, elRRange, 'r', true);
-    bindSyncedInput(elQInput, elQRange, 'q', true);
-    bindSyncedInput(elVInput, elVRange, 'v', true);
+    bindSyncedInput(
+        elMinPrice,
+        elMinPriceRange,
+        'minPrice'
+    );
 
-    elNewStrike.addEventListener('input', (e) => {
-        let val = parseFloat(e.target.value);
-        if (!isNaN(val)) elNewStrikeRange.value = val;
-    });
-    elNewStrikeRange.addEventListener('input', (e) => {
-        let val = parseFloat(e.target.value);
-        if (!isNaN(val)) elNewStrike.value = val;
+    bindSyncedInput(
+        elMaxPrice,
+        elMaxPriceRange,
+        'maxPrice'
+    );
+
+    bindSyncedInput(
+        elTInput,
+        elTRange,
+        't'
+    );
+
+    bindSyncedInput(
+        elRInput,
+        elRRange,
+        'r',
+        true
+    );
+
+    bindSyncedInput(
+        elQInput,
+        elQRange,
+        'q',
+        true
+    );
+
+    bindSyncedInput(
+        elVInput,
+        elVRange,
+        'v',
+        true
+    );
+
+    elNewStrike.addEventListener('input', (event) => {
+        const value = parseFloat(event.target.value);
+
+        if (!Number.isNaN(value)) {
+            elNewStrikeRange.value = value;
+        }
     });
 
-    elNewBarrier.addEventListener('input', (e) => {
-        let val = parseFloat(e.target.value);
-        if (!isNaN(val)) elNewBarrierRange.value = val;
-    });
-    elNewBarrierRange.addEventListener('input', (e) => {
-        let val = parseFloat(e.target.value);
-        if (!isNaN(val)) elNewBarrier.value = val;
-    });
+    elNewStrikeRange.addEventListener('input', (event) => {
+        const value = parseFloat(event.target.value);
 
-    elNewBarrierType.addEventListener('change', (e) => {
-        elBarrierLevelCell.style.display = e.target.value === 'None' ? 'none' : 'flex';
+        if (!Number.isNaN(value)) {
+            elNewStrike.value = value;
+        }
     });
 
-    STATE.global.minPrice = parseFloat(elMinPrice.value) || 50;
-    STATE.global.maxPrice = parseFloat(elMaxPrice.value) || 150;
-    STATE.global.t = parseFloat(elTInput.value) || 1.0;
-    STATE.global.r = (parseFloat(elRInput.value) || 5.0) / 100;
-    STATE.global.q = (parseFloat(elQInput.value) || 0.0) / 100;
-    STATE.global.v = (parseFloat(elVInput.value) || 20.0) / 100;
+    elNewBarrier.addEventListener('input', (event) => {
+        const value = parseFloat(event.target.value);
 
-    toggleCheckboxes.forEach(cb => {
-        cb.addEventListener('change', (e) => {
-            const metric = e.target.getAttribute('data-metric');
-            if (e.target.checked) {
-                if (!STATE.activeMetrics.includes(metric)) STATE.activeMetrics.push(metric);
+        if (!Number.isNaN(value)) {
+            elNewBarrierRange.value = value;
+        }
+    });
+
+    elNewBarrierRange.addEventListener('input', (event) => {
+        const value = parseFloat(event.target.value);
+
+        if (!Number.isNaN(value)) {
+            elNewBarrier.value = value;
+        }
+    });
+
+    elNewBarrierType.addEventListener('change', (event) => {
+        elBarrierLevelCell.style.display =
+            event.target.value === 'None'
+                ? 'none'
+                : 'flex';
+    });
+
+    STATE.global.minPrice =
+        parseFloat(elMinPrice.value) || 50;
+
+    STATE.global.maxPrice =
+        parseFloat(elMaxPrice.value) || 150;
+
+    STATE.global.t =
+        parseFloat(elTInput.value) || 1.0;
+
+    STATE.global.r =
+        (parseFloat(elRInput.value) || 5.0) / 100;
+
+    STATE.global.q =
+        (parseFloat(elQInput.value) || 0.0) / 100;
+
+    STATE.global.v =
+        (parseFloat(elVInput.value) || 20.0) / 100;
+
+    toggleCheckboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', (event) => {
+            const metric =
+                event.target.getAttribute('data-metric');
+
+            if (event.target.checked) {
+                if (!STATE.activeMetrics.includes(metric)) {
+                    STATE.activeMetrics.push(metric);
+                }
             } else {
-                STATE.activeMetrics = STATE.activeMetrics.filter(m => m !== metric);
+                STATE.activeMetrics =
+                    STATE.activeMetrics.filter(
+                        (item) => item !== metric
+                    );
             }
+
             updateChart();
         });
     });
 
     // Reset
-    const btnReset = document.getElementById('btn-env-reset');
+    const btnReset =
+        document.getElementById('btn-env-reset');
+
     if (btnReset) {
         btnReset.addEventListener('click', () => {
-            STATE.global = { minPrice: 50, maxPrice: 150, steps: 100, t: 1.0, r: 0.05, q: 0.0, v: 0.20 };
-            STATE.legs = [{ id: generateId(), type: 'Call', position: 'Long', strike: 100, quantity: 1, barrierType: 'None', barrierLevel: 0 }];
+            STATE.global = {
+                minPrice: 50,
+                maxPrice: 150,
+                steps: 100,
+                t: 1.0,
+                r: 0.05,
+                q: 0.0,
+                v: 0.20
+            };
 
-            elMinPriceRange.value = 50; elMinPrice.value = 50;
-            elMaxPriceRange.value = 150; elMaxPrice.value = 150;
-            elTRange.value = 1.0; elTInput.value = 1.0;
-            elRRange.value = 5.0; elRInput.value = 5.0;
-            elQRange.value = 0.0; elQInput.value = 0.0;
-            elVRange.value = 20.0; elVInput.value = 20.0;
+            STATE.legs = [
+                {
+                    id: generateId(),
+                    type: 'Call',
+                    position: 'Long',
+                    strike: 100,
+                    quantity: 1,
+                    barrierType: 'None',
+                    barrierLevel: 0
+                }
+            ];
+
+            elMinPriceRange.value = 50;
+            elMinPrice.value = 50;
+
+            elMaxPriceRange.value = 150;
+            elMaxPrice.value = 150;
+
+            elTRange.value = 1.0;
+            elTInput.value = 1.0;
+
+            elRRange.value = 5.0;
+            elRInput.value = 5.0;
+
+            elQRange.value = 0.0;
+            elQInput.value = 0.0;
+
+            elVRange.value = 20.0;
+            elVInput.value = 20.0;
+
             elNewBarrierType.value = 'None';
             elBarrierLevelCell.style.display = 'none';
 
@@ -216,29 +439,69 @@ function bindUIElements() {
     }
 
     // Structured products
-    const btnApplyStructure = document.getElementById('btn-apply-structure');
-    const selectStructure = document.getElementById('structured-product-select');
+    const btnApplyStructure =
+        document.getElementById('btn-apply-structure');
+
+    const selectStructure =
+        document.getElementById('structured-product-select');
+
     if (btnApplyStructure && selectStructure) {
         btnApplyStructure.addEventListener('click', () => {
             const structure = selectStructure.value;
-            const k = parseFloat(elNewStrike.value) || 100;
-            const mkLeg = (type, pos, strike) => ({ id: generateId(), type, position: pos, strike, quantity: 1, barrierType: 'None', barrierLevel: 0 });
-            let newLegs = [];
+            const strike =
+                parseFloat(elNewStrike.value) || 100;
+
+            const createLeg = (
+                type,
+                position,
+                legStrike
+            ) => ({
+                id: generateId(),
+                type,
+                position,
+                strike: legStrike,
+                quantity: 1,
+                barrierType: 'None',
+                barrierLevel: 0
+            });
+
+            const newLegs = [];
 
             if (structure === 'straddle') {
-                newLegs.push(mkLeg('Call', 'Long', k), mkLeg('Put', 'Long', k));
+                newLegs.push(
+                    createLeg('Call', 'Long', strike),
+                    createLeg('Put', 'Long', strike)
+                );
             } else if (structure === 'strangle') {
-                newLegs.push(mkLeg('Put', 'Long', k - 10), mkLeg('Call', 'Long', k + 10));
+                newLegs.push(
+                    createLeg('Put', 'Long', strike - 10),
+                    createLeg('Call', 'Long', strike + 10)
+                );
             } else if (structure === 'bull_call') {
-                newLegs.push(mkLeg('Call', 'Long', k), mkLeg('Call', 'Short', k + 10));
+                newLegs.push(
+                    createLeg('Call', 'Long', strike),
+                    createLeg('Call', 'Short', strike + 10)
+                );
             } else if (structure === 'bear_put') {
-                newLegs.push(mkLeg('Put', 'Long', k), mkLeg('Put', 'Short', k - 10));
+                newLegs.push(
+                    createLeg('Put', 'Long', strike),
+                    createLeg('Put', 'Short', strike - 10)
+                );
             } else if (structure === 'iron_condor') {
-                newLegs.push(mkLeg('Put', 'Long', k - 20), mkLeg('Put', 'Short', k - 10), mkLeg('Call', 'Short', k + 10), mkLeg('Call', 'Long', k + 20));
+                newLegs.push(
+                    createLeg('Put', 'Long', strike - 20),
+                    createLeg('Put', 'Short', strike - 10),
+                    createLeg('Call', 'Short', strike + 10),
+                    createLeg('Call', 'Long', strike + 20)
+                );
             }
 
             if (newLegs.length > 0) {
-                STATE.legs = [...STATE.legs, ...newLegs];
+                STATE.legs = [
+                    ...STATE.legs,
+                    ...newLegs
+                ];
+
                 renderLegs();
                 debouncedCompute(0);
             }
@@ -246,77 +509,170 @@ function bindUIElements() {
     }
 
     // Animation
-    const animSelect = document.getElementById('anim-param-select');
-    const animPlayBtn = document.getElementById('anim-play-btn');
+    const animSelect =
+        document.getElementById('anim-param-select');
+
+    const animPlayBtn =
+        document.getElementById('anim-play-btn');
+
     let animRequest = null;
 
     const paramMap = {
-        't': { numEl: elTInput, rangeEl: elTRange, key: 't', isPct: false },
-        'v': { numEl: elVInput, rangeEl: elVRange, key: 'v', isPct: true },
-        'r': { numEl: elRInput, rangeEl: elRRange, key: 'r', isPct: true },
-        'q': { numEl: elQInput, rangeEl: elQRange, key: 'q', isPct: true }
+        t: {
+            numEl: elTInput,
+            rangeEl: elTRange,
+            key: 't',
+            isPct: false
+        },
+        v: {
+            numEl: elVInput,
+            rangeEl: elVRange,
+            key: 'v',
+            isPct: true
+        },
+        r: {
+            numEl: elRInput,
+            rangeEl: elRRange,
+            key: 'r',
+            isPct: true
+        },
+        q: {
+            numEl: elQInput,
+            rangeEl: elQRange,
+            key: 'q',
+            isPct: true
+        }
     };
 
     function animateStep() {
-        if (!STATE.isAnimating) return;
-        const target = paramMap[animSelect.value];
-        const currentVal = parseFloat(target.rangeEl.value);
-        const maxVal = parseFloat(target.rangeEl.max);
-        const step = parseFloat(target.rangeEl.step) || 0.1;
+        if (!STATE.isAnimating) {
+            return;
+        }
 
-        if (currentVal >= maxVal) { stopAnimation(); return; }
+        const target =
+            paramMap[animSelect.value];
 
-        const nextVal = Math.min(currentVal + step, maxVal);
-        target.rangeEl.value = nextVal.toFixed(2);
-        target.numEl.value = nextVal.toFixed(2);
-        STATE.global[target.key] = target.isPct ? nextVal / 100 : nextVal;
+        const currentValue =
+            parseFloat(target.rangeEl.value);
+
+        const maxValue =
+            parseFloat(target.rangeEl.max);
+
+        const step =
+            parseFloat(target.rangeEl.step) || 0.1;
+
+        if (currentValue >= maxValue) {
+            stopAnimation();
+            return;
+        }
+
+        const nextValue =
+            Math.min(currentValue + step, maxValue);
+
+        target.rangeEl.value =
+            nextValue.toFixed(2);
+
+        target.numEl.value =
+            nextValue.toFixed(2);
+
+        STATE.global[target.key] =
+            target.isPct
+                ? nextValue / 100
+                : nextValue;
+
         computeGreeks();
-        animRequest = requestAnimationFrame(animateStep);
+
+        animRequest =
+            requestAnimationFrame(animateStep);
     }
 
     function stopAnimation() {
         STATE.isAnimating = false;
+
         animPlayBtn.textContent = 'PLAY';
-        animPlayBtn.style.color = 'var(--text-main)';
-        if (animRequest) cancelAnimationFrame(animRequest);
+        animPlayBtn.style.color = THEME.text;
+
+        if (animRequest) {
+            cancelAnimationFrame(animRequest);
+        }
     }
 
     animPlayBtn.addEventListener('click', () => {
         if (STATE.isAnimating) {
             stopAnimation();
-        } else {
-            STATE.isAnimating = true;
-            animPlayBtn.textContent = 'PAUSE';
-            animPlayBtn.style.color = 'var(--accent-secondary)';
-            const target = paramMap[animSelect.value];
-            if (parseFloat(target.rangeEl.value) >= parseFloat(target.rangeEl.max)) {
-                target.rangeEl.value = target.rangeEl.min;
-                target.numEl.value = target.rangeEl.min;
-                STATE.global[target.key] = target.isPct ? parseFloat(target.rangeEl.min) / 100 : parseFloat(target.rangeEl.min);
-            }
-            animRequest = requestAnimationFrame(animateStep);
+            return;
         }
+
+        STATE.isAnimating = true;
+
+        animPlayBtn.textContent = 'PAUSE';
+        animPlayBtn.style.color = THEME.blue;
+
+        const target =
+            paramMap[animSelect.value];
+
+        if (
+            parseFloat(target.rangeEl.value) >=
+            parseFloat(target.rangeEl.max)
+        ) {
+            target.rangeEl.value =
+                target.rangeEl.min;
+
+            target.numEl.value =
+                target.rangeEl.min;
+
+            STATE.global[target.key] =
+                target.isPct
+                    ? parseFloat(target.rangeEl.min) / 100
+                    : parseFloat(target.rangeEl.min);
+        }
+
+        animRequest =
+            requestAnimationFrame(animateStep);
     });
 
     // Add Leg
     btnAddLeg.addEventListener('click', () => {
-        const strikeVal = parseFloat(elNewStrike.value);
-        if (isNaN(strikeVal)) return;
-        const bType = elNewBarrierType.value;
-        const bLevel = bType !== 'None' ? parseFloat(elNewBarrier.value) || 120 : 0;
+        const strikeValue =
+            parseFloat(elNewStrike.value);
+
+        if (Number.isNaN(strikeValue)) {
+            return;
+        }
+
+        const barrierType =
+            elNewBarrierType.value;
+
+        const barrierLevel =
+            barrierType !== 'None'
+                ? parseFloat(elNewBarrier.value) || 120
+                : 0;
 
         STATE.legs.push({
-            id: generateId(), type: elNewType.value, position: elNewPos.value,
-            strike: strikeVal, quantity: 1, barrierType: bType, barrierLevel: bLevel
+            id: generateId(),
+            type: elNewType.value,
+            position: elNewPos.value,
+            strike: strikeValue,
+            quantity: 1,
+            barrierType,
+            barrierLevel
         });
+
         renderLegs();
         debouncedCompute(0);
     });
 
     // 3D Surface
-    const btnGenSurface = document.getElementById('btn-generate-surface');
+    const btnGenSurface =
+        document.getElementById(
+            'btn-generate-surface'
+        );
+
     if (btnGenSurface) {
-        btnGenSurface.addEventListener('click', () => compute3DSurface());
+        btnGenSurface.addEventListener(
+            'click',
+            () => compute3DSurface()
+        );
     }
 }
 
@@ -326,62 +682,143 @@ function renderLegs() {
     elLegCount.textContent = STATE.legs.length;
 
     STATE.legs.forEach((leg) => {
-        const row = document.createElement('div');
-        row.className = `leg-row ${leg.type}`;
-        const sign = leg.position === 'Long' ? '+' : '-';
-        const barrierTag = leg.barrierType && leg.barrierType !== 'None'
-            ? ` ${BARRIER_LABELS[leg.barrierType]}@${leg.barrierLevel.toFixed(0)}` : '';
+        const row =
+            document.createElement('div');
+
+        row.className =
+            `leg-row ${leg.type}`;
+
+        const sign =
+            leg.position === 'Long' ? '+' : '-';
+
+        const barrierTag =
+            leg.barrierType &&
+            leg.barrierType !== 'None'
+                ? ` ${BARRIER_LABELS[leg.barrierType]}@${leg.barrierLevel.toFixed(0)}`
+                : '';
 
         row.innerHTML = `
             <div class="leg-info">
-                <div class="leg-text">${leg.position.toUpperCase()} ${leg.type.toUpperCase()} K=${leg.strike.toFixed(2)}${barrierTag}</div>
-                <div class="leg-qty">QTY: ${sign}${leg.quantity}</div>
+                <div class="leg-text">
+                    ${leg.position.toUpperCase()}
+                    ${leg.type.toUpperCase()}
+                    K=${leg.strike.toFixed(2)}${barrierTag}
+                </div>
+
+                <div class="leg-qty">
+                    QTY: ${sign}${leg.quantity}
+                </div>
             </div>
-            <button class="del-btn" data-id="${leg.id}">&times;</button>
+
+            <button
+                class="del-btn"
+                data-id="${leg.id}"
+            >
+                &times;
+            </button>
         `;
+
         elLegsContainer.appendChild(row);
     });
 
-    document.querySelectorAll('.del-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const id = e.target.getAttribute('data-id');
-            STATE.legs = STATE.legs.filter(l => l.id !== id);
-            renderLegs();
-            debouncedCompute(0);
+    document
+        .querySelectorAll('.del-btn')
+        .forEach((button) => {
+            button.addEventListener(
+                'click',
+                (event) => {
+                    const id =
+                        event.target.getAttribute(
+                            'data-id'
+                        );
+
+                    STATE.legs =
+                        STATE.legs.filter(
+                            (leg) => leg.id !== id
+                        );
+
+                    renderLegs();
+                    debouncedCompute(0);
+                }
+            );
         });
-    });
 }
 
 // ===========================================================================
-// WASM-POWERED COMPUTATION (replaces HTTP fetch)
+// WASM-POWERED COMPUTATION
 // ===========================================================================
 
 function computeGreeks() {
-    if (!STATE.wasmReady || STATE.legs.length === 0) {
+    if (
+        !STATE.wasmReady ||
+        STATE.legs.length === 0
+    ) {
         STATE.chartData = [];
         updateChart();
         return;
     }
 
-    const { minPrice, maxPrice, steps } = STATE.global;
-    const numSteps = Math.max(steps, 2);
-    const stepSize = (maxPrice - minPrice) / (numSteps - 1);
+    const {
+        minPrice,
+        maxPrice,
+        steps
+    } = STATE.global;
 
-    const packed = packLegsForWasm(STATE.legs, STATE.global);
-    const legPtr = allocLegsInWasm(packed);
+    const numSteps =
+        Math.max(steps, 2);
+
+    const stepSize =
+        (maxPrice - minPrice) /
+        (numSteps - 1);
+
+    const packed =
+        packLegsForWasm(
+            STATE.legs,
+            STATE.global
+        );
+
+    const legPtr =
+        allocLegsInWasm(packed);
 
     const result = [];
-    // WASM _calcGreeksAtSpot returns 14 doubles: indices 0-11 (price..ultima), 12=vanna, 13=volga
-    const greekKeys = ['price', 'delta', 'gamma', 'theta', 'vega', 'rho', 'payoff', 'timeValue', 'speed', 'zomma', 'color', 'ultima', 'vanna', 'volga'];
+
+    const greekKeys = [
+        'price',
+        'delta',
+        'gamma',
+        'theta',
+        'vega',
+        'rho',
+        'payoff',
+        'timeValue',
+        'speed',
+        'zomma',
+        'color',
+        'ultima',
+        'vanna',
+        'volga'
+    ];
 
     for (let i = 0; i < numSteps; i++) {
-        const spot = minPrice + i * stepSize;
-        const resPtr = Module._calcGreeksAtSpot(spot, STATE.legs.length, legPtr);
+        const spot =
+            minPrice + i * stepSize;
+
+        const resultPtr =
+            Module._calcGreeksAtSpot(
+                spot,
+                STATE.legs.length,
+                legPtr
+            );
 
         const point = { spot };
+
         for (let g = 0; g < 14; g++) {
-            point[greekKeys[g]] = Module.HEAPF64[resPtr / 8 + g];
+            point[greekKeys[g]] =
+                Module.HEAPF64[
+                    resultPtr / 8 + g
+                ];
         }
+
         result.push(point);
     }
 
@@ -392,160 +829,455 @@ function computeGreeks() {
 }
 
 function compute3DSurface() {
-    if (!STATE.wasmReady || STATE.legs.length === 0) return;
+    if (
+        !STATE.wasmReady ||
+        STATE.legs.length === 0
+    ) {
+        return;
+    }
 
-    const metric = document.getElementById('surface-metric').value;
-    const secondVar = document.getElementById('surface-variable').value;
+    const metric =
+        document.getElementById(
+            'surface-metric'
+        ).value;
+
+    const secondVar =
+        document.getElementById(
+            'surface-variable'
+        ).value;
 
     const AXIS_RANGES = {
-        timeToMaturity: { min: 0.05, max: STATE.global.t > 0.1 ? STATE.global.t : 2.0, label: 'Time to Maturity (T)' },
-        volatility: { min: 0.05, max: 1.0, label: 'Volatility (σ)' },
-        riskFreeRate: { min: 0.0, max: 0.20, label: 'Risk-Free Rate (r)' },
-        dividendYield: { min: 0.0, max: 0.10, label: 'Dividend Yield (q)' }
+        timeToMaturity: {
+            min: 0.05,
+            max:
+                STATE.global.t > 0.1
+                    ? STATE.global.t
+                    : 2.0,
+            label: 'Time to Maturity (T)'
+        },
+
+        volatility: {
+            min: 0.05,
+            max: 1.0,
+            label: 'Volatility (σ)'
+        },
+
+        riskFreeRate: {
+            min: 0.0,
+            max: 0.20,
+            label: 'Risk-Free Rate (r)'
+        },
+
+        dividendYield: {
+            min: 0.0,
+            max: 0.10,
+            label: 'Dividend Yield (q)'
+        }
     };
 
-    const secRange = AXIS_RANGES[secondVar];
+    const secRange =
+        AXIS_RANGES[secondVar];
+
     const surfaceSteps = 40;
 
-    const spotStep = (STATE.global.maxPrice - STATE.global.minPrice) / (surfaceSteps - 1);
-    const secStep = (secRange.max - secRange.min) / (surfaceSteps - 1);
+    const spotStep =
+        (
+            STATE.global.maxPrice -
+            STATE.global.minPrice
+        ) /
+        (surfaceSteps - 1);
+
+    const secStep =
+        (
+            secRange.max -
+            secRange.min
+        ) /
+        (surfaceSteps - 1);
 
     const spots = [];
     const secondAxis = [];
     const surface = [];
 
-    for (let i = 0; i < surfaceSteps; i++) spots.push(STATE.global.minPrice + i * spotStep);
-    for (let j = 0; j < surfaceSteps; j++) secondAxis.push(secRange.min + j * secStep);
+    for (
+        let i = 0;
+        i < surfaceSteps;
+        i++
+    ) {
+        spots.push(
+            STATE.global.minPrice +
+            i * spotStep
+        );
+    }
 
-    const packed = packLegsForWasm(STATE.legs, STATE.global);
-    const legPtr = allocLegsInWasm(packed);
-    const secVarIdx = SEC_VAR_INDICES[secondVar];
-    const metricIdx = METRIC_INDICES[metric];
+    for (
+        let j = 0;
+        j < surfaceSteps;
+        j++
+    ) {
+        secondAxis.push(
+            secRange.min +
+            j * secStep
+        );
+    }
 
-    const surfPtr = Module._calcSurface3D(
-        STATE.global.minPrice, STATE.global.maxPrice, surfaceSteps,
-        secRange.min, secRange.max, surfaceSteps,
-        secVarIdx, metricIdx,
-        STATE.legs.length, legPtr
-    );
+    const packed =
+        packLegsForWasm(
+            STATE.legs,
+            STATE.global
+        );
 
-    for (let j = 0; j < surfaceSteps; j++) {
+    const legPtr =
+        allocLegsInWasm(packed);
+
+    const secVarIdx =
+        SEC_VAR_INDICES[secondVar];
+
+    const metricIdx =
+        METRIC_INDICES[metric];
+
+    const surfacePtr =
+        Module._calcSurface3D(
+            STATE.global.minPrice,
+            STATE.global.maxPrice,
+            surfaceSteps,
+            secRange.min,
+            secRange.max,
+            surfaceSteps,
+            secVarIdx,
+            metricIdx,
+            STATE.legs.length,
+            legPtr
+        );
+
+    for (
+        let j = 0;
+        j < surfaceSteps;
+        j++
+    ) {
         const row = [];
-        for (let i = 0; i < surfaceSteps; i++) {
-            row.push(Module.HEAPF64[surfPtr / 8 + j * surfaceSteps + i]);
+
+        for (
+            let i = 0;
+            i < surfaceSteps;
+            i++
+        ) {
+            row.push(
+                Module.HEAPF64[
+                    surfacePtr / 8 +
+                    j * surfaceSteps +
+                    i
+                ]
+            );
         }
+
         surface.push(row);
     }
+
     Module._free(legPtr);
 
-    render3DSurface({ spots, secondAxis, surface }, metric, secRange.label);
+    render3DSurface(
+        {
+            spots,
+            secondAxis,
+            surface
+        },
+        metric,
+        secRange.label
+    );
 }
 
+// --- Plotly 3D Surface ---
+function render3DSurface(
+    data,
+    metric,
+    secondAxisLabel
+) {
+    const conf =
+        METRIC_CONFIG[metric] || {
+            color: THEME.blue,
+            label: metric.toUpperCase()
+        };
 
-
-function render3DSurface(data, metric, secondAxisLabel) {
-    const conf = METRIC_CONFIG[metric] || { color: '#00ffcc', label: metric.toUpperCase() };
+    const plotFont =
+        'Inter, Arial, sans-serif';
 
     const trace = {
         x: data.spots,
         y: data.secondAxis,
         z: data.surface,
         type: 'surface',
+
         colorscale: [
-            [0, 'rgb(5, 5, 7)'],
-            [0.15, 'rgb(10, 30, 60)'],
-            [0.35, 'rgb(0, 100, 180)'],
-            [0.5, 'rgb(0, 200, 160)'],
-            [0.65, 'rgb(0, 255, 204)'],
-            [0.8, 'rgb(160, 255, 100)'],
-            [1, 'rgb(255, 255, 255)']
+            [0.00, '#00205B'],
+            [0.18, '#004B87'],
+            [0.36, '#0077A8'],
+            [0.56, '#00A3E0'],
+            [0.76, '#75C9E5'],
+            [1.00, '#E5F6FC']
         ],
+
         contours: {
-            z: { show: true, usecolormap: true, highlightcolor: '#00ffcc', project: { z: false } }
+            z: {
+                show: true,
+                usecolormap: true,
+                highlightcolor: THEME.blue,
+                project: {
+                    z: false
+                }
+            }
         },
-        lighting: { ambient: 0.6, diffuse: 0.5, specular: 0.3, roughness: 0.5 },
-        opacity: 0.95,
+
+        lighting: {
+            ambient: 0.72,
+            diffuse: 0.55,
+            specular: 0.2,
+            roughness: 0.65
+        },
+
+        opacity: 0.97,
         showscale: true,
+
         colorbar: {
-            title: { text: conf.label, font: { color: '#6b6b80', size: 11, family: 'Inter, monospace' } },
-            tickfont: { color: '#6b6b80', size: 10, family: 'Inter, monospace' },
-            bordercolor: '#1d1d24',
-            bgcolor: 'rgba(10,10,13,0.8)',
+            title: {
+                text: conf.label,
+                font: {
+                    color: THEME.navy,
+                    size: 11,
+                    family: plotFont
+                }
+            },
+
+            tickfont: {
+                color: THEME.muted,
+                size: 10,
+                family: plotFont
+            },
+
+            bordercolor: THEME.grid,
+            borderwidth: 1,
+            bgcolor: 'rgba(255,255,255,0.96)',
             len: 0.7
         }
     };
 
-    const layout = {
-        paper_bgcolor: '#050507',
-        plot_bgcolor: '#050507',
-        scene: {
-            bgcolor: '#050507',
-            xaxis: {
-                title: { text: 'SPOT', font: { color: '#6b6b80', size: 11, family: 'Inter, monospace' } },
-                tickfont: { color: '#6b6b80', size: 9, family: 'Inter, monospace' },
-                gridcolor: '#1d1d24', zerolinecolor: '#333340',
-                showbackground: true, backgroundcolor: '#0a0a0d'
-            },
-            yaxis: {
-                title: { text: secondAxisLabel, font: { color: '#6b6b80', size: 11, family: 'Inter, monospace' } },
-                tickfont: { color: '#6b6b80', size: 9, family: 'Inter, monospace' },
-                gridcolor: '#1d1d24', zerolinecolor: '#333340',
-                showbackground: true, backgroundcolor: '#0a0a0d'
-            },
-            zaxis: {
-                title: { text: conf.label, font: { color: conf.color, size: 11, family: 'Inter, monospace' } },
-                tickfont: { color: '#6b6b80', size: 9, family: 'Inter, monospace' },
-                gridcolor: '#1d1d24', zerolinecolor: '#333340',
-                showbackground: true, backgroundcolor: '#0a0a0d'
-            },
-            camera: { eye: { x: 1.6, y: -1.6, z: 0.8 } },
-            aspectratio: { x: 1.2, y: 1.2, z: 0.8 }
+    const axisStyle = {
+        tickfont: {
+            color: THEME.muted,
+            size: 9,
+            family: plotFont
         },
-        margin: { l: 0, r: 0, t: 10, b: 10 },
-        font: { family: 'Inter, monospace', color: '#6b6b80' }
+
+        gridcolor: THEME.grid,
+        zerolinecolor: THEME.border,
+        linecolor: THEME.border,
+
+        showbackground: true,
+        backgroundcolor: THEME.panel
     };
 
-    Plotly.newPlot('surface3d', [trace], layout, {
-        responsive: true, displayModeBar: true,
-        modeBarButtonsToRemove: ['toImage', 'sendDataToCloud'], displaylogo: false
-    });
+    const layout = {
+        paper_bgcolor: THEME.white,
+        plot_bgcolor: THEME.white,
+
+        scene: {
+            bgcolor: THEME.white,
+
+            xaxis: {
+                ...axisStyle,
+
+                title: {
+                    text: 'SPOT',
+                    font: {
+                        color: THEME.navy,
+                        size: 11,
+                        family: plotFont
+                    }
+                }
+            },
+
+            yaxis: {
+                ...axisStyle,
+
+                title: {
+                    text: secondAxisLabel,
+                    font: {
+                        color: THEME.navy,
+                        size: 11,
+                        family: plotFont
+                    }
+                }
+            },
+
+            zaxis: {
+                ...axisStyle,
+
+                title: {
+                    text: conf.label,
+                    font: {
+                        color: conf.color,
+                        size: 11,
+                        family: plotFont
+                    }
+                }
+            },
+
+            camera: {
+                eye: {
+                    x: 1.6,
+                    y: -1.6,
+                    z: 0.8
+                }
+            },
+
+            aspectratio: {
+                x: 1.2,
+                y: 1.2,
+                z: 0.8
+            }
+        },
+
+        margin: {
+            l: 0,
+            r: 0,
+            t: 10,
+            b: 10
+        },
+
+        font: {
+            family: plotFont,
+            color: THEME.muted
+        }
+    };
+
+    const config = {
+        responsive: true,
+        displayModeBar: true,
+        modeBarButtonsToRemove: [
+            'toImage',
+            'sendDataToCloud'
+        ],
+        displaylogo: false
+    };
+
+    Plotly.newPlot(
+        'surface3d',
+        [trace],
+        layout,
+        config
+    );
 }
 
-// --- Charting Engine ---
+// --- Chart.js Engine ---
 function initChart() {
-    const ctx = document.getElementById('greeksChart').getContext('2d');
-    Chart.defaults.color = 'var(--text-muted)';
-    Chart.defaults.font.family = 'var(--font-mono)';
-    Chart.defaults.scale.grid.color = 'var(--border-dim)';
+    const canvas =
+        document.getElementById(
+            'greeksChart'
+        );
+
+    if (!canvas) {
+        console.error(
+            'Canvas #greeksChart introuvable.'
+        );
+        return;
+    }
+
+    const ctx =
+        canvas.getContext('2d');
+
+    Chart.defaults.color =
+        THEME.muted;
+
+    Chart.defaults.font.family =
+        "'Inter', Arial, sans-serif";
+
+    Chart.defaults.scale.grid.color =
+        THEME.grid;
 
     chart = new Chart(ctx, {
         type: 'line',
-        data: { labels: [], datasets: [] },
+
+        data: {
+            labels: [],
+            datasets: []
+        },
+
         options: {
             animation: false,
             responsive: true,
             maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
+
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+
             plugins: {
-                legend: { display: false },
+                legend: {
+                    display: false
+                },
+
                 tooltip: {
-                    backgroundColor: 'rgba(10, 10, 13, 0.95)',
-                    titleColor: '#fff',
-                    titleFont: { family: 'var(--font-mono)', size: 11 },
-                    bodyColor: '#fff',
-                    bodyFont: { family: 'var(--font-mono)', size: 11 },
-                    borderColor: 'var(--border-bright)',
-                    borderWidth: 1, padding: 10, boxPadding: 4, usePointStyle: true,
+                    backgroundColor:
+                        'rgba(0, 32, 91, 0.96)',
+
+                    titleColor:
+                        THEME.white,
+
+                    titleFont: {
+                        family:
+                            "'Inter', Arial, sans-serif",
+                        size: 11,
+                        weight: '600'
+                    },
+
+                    bodyColor:
+                        THEME.white,
+
+                    bodyFont: {
+                        family:
+                            "'Inter', Arial, sans-serif",
+                        size: 11
+                    },
+
+                    borderColor:
+                        THEME.blue,
+
+                    borderWidth: 1,
+                    cornerRadius: 2,
+                    padding: 10,
+                    boxPadding: 4,
+                    usePointStyle: true,
+
                     callbacks: {
-                        title: (ctx) => `SPOT: ${ctx[0].label}`,
-                        label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(4)}`
+                        title: (contexts) =>
+                            `SPOT: ${contexts[0].label}`,
+
+                        label: (context) =>
+                            ` ${context.dataset.label}: ${context.parsed.y.toFixed(4)}`
                     }
                 }
             },
+
             scales: {
                 x: {
-                    grid: { drawBorder: false, color: 'var(--border-dim)' },
-                    ticks: { color: '#ffffff', font: { size: 10 } }
+                    grid: {
+                        drawBorder: false,
+                        color: THEME.grid
+                    },
+
+                    border: {
+                        color: THEME.border
+                    },
+
+                    ticks: {
+                        color: THEME.muted,
+
+                        font: {
+                            family:
+                                "'Inter', Arial, sans-serif",
+                            size: 10
+                        }
+                    }
                 }
             }
         }
@@ -553,52 +1285,166 @@ function initChart() {
 }
 
 function updateChart() {
-    if (!chart) return;
-    const dataPoints = STATE.chartData || [];
-    chart.data.labels = dataPoints.map(d => d.spot.toFixed(2));
+    if (!chart) {
+        return;
+    }
+
+    const dataPoints =
+        STATE.chartData || [];
+
+    chart.data.labels =
+        dataPoints.map(
+            (point) =>
+                point.spot.toFixed(2)
+        );
+
     chart.data.datasets = [];
-    const newScales = { x: chart.options.scales.x };
 
-    STATE.activeMetrics.forEach((metric, index) => {
-        const conf = METRIC_CONFIG[metric] || { color: '#fff', label: metric.toUpperCase() };
-        const axisId = `y-${metric}`;
-        const metricData = dataPoints.map(d => d[metric]);
+    const newScales = {
+        x: chart.options.scales.x
+    };
 
-        chart.data.datasets.push({
-            label: conf.label, data: metricData, borderColor: conf.color,
-            backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0,
-            pointHoverRadius: 4, tension: 0.05, yAxisID: axisId
-        });
+    STATE.activeMetrics.forEach(
+        (metric, index) => {
+            const conf =
+                METRIC_CONFIG[metric] || {
+                    color: THEME.navy,
+                    label: metric.toUpperCase()
+                };
 
-        const isPrimary = index === 0;
-        let axisConf = {
-            type: 'linear', display: true,
-            position: isPrimary ? 'left' : 'right',
-            grid: { drawOnChartArea: isPrimary, color: 'var(--border-dim)' },
-            title: { display: true, text: conf.label, color: conf.color, font: { size: 9, weight: 700, family: 'var(--font-mono)' } },
-            ticks: { color: conf.color, font: { size: 10, family: 'var(--font-mono)' } }
-        };
+            const axisId =
+                `y-${metric}`;
 
-        if (metricData.length > 0) {
-            let dMin = Math.min(...metricData);
-            let dMax = Math.max(...metricData);
-            let dRange = dMax - dMin;
-            if (dRange === 0) dRange = 1;
-            let padding = dRange * 0.05;
-            axisConf.min = dMin - padding;
-            axisConf.max = dMax + padding;
+            const metricData =
+                dataPoints.map(
+                    (point) => point[metric]
+                );
+
+            chart.data.datasets.push({
+                label: conf.label,
+                data: metricData,
+
+                borderColor: conf.color,
+                backgroundColor: 'transparent',
+
+                borderWidth: 2,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                pointHoverBackgroundColor:
+                    conf.color,
+
+                pointHoverBorderColor:
+                    THEME.white,
+
+                pointHoverBorderWidth: 1,
+
+                tension: 0.05,
+                yAxisID: axisId
+            });
+
+            const isPrimary =
+                index === 0;
+
+            const axisConf = {
+                type: 'linear',
+                display: true,
+
+                position:
+                    isPrimary
+                        ? 'left'
+                        : 'right',
+
+                grid: {
+                    drawOnChartArea:
+                        isPrimary,
+
+                    color:
+                        THEME.grid
+                },
+
+                border: {
+                    color:
+                        isPrimary
+                            ? THEME.border
+                            : conf.color
+                },
+
+                title: {
+                    display: true,
+                    text: conf.label,
+                    color: conf.color,
+
+                    font: {
+                        size: 9,
+                        weight: 700,
+                        family:
+                            "'Inter', Arial, sans-serif"
+                    }
+                },
+
+                ticks: {
+                    color: conf.color,
+
+                    font: {
+                        size: 10,
+                        family:
+                            "'Inter', Arial, sans-serif"
+                    }
+                }
+            };
+
+            if (metricData.length > 0) {
+                const finiteValues =
+                    metricData.filter(
+                        Number.isFinite
+                    );
+
+                if (finiteValues.length > 0) {
+                    let dataMin =
+                        Math.min(
+                            ...finiteValues
+                        );
+
+                    let dataMax =
+                        Math.max(
+                            ...finiteValues
+                        );
+
+                    let dataRange =
+                        dataMax - dataMin;
+
+                    if (dataRange === 0) {
+                        dataRange =
+                            Math.abs(dataMax) *
+                            0.1 || 1;
+                    }
+
+                    const padding =
+                        dataRange * 0.05;
+
+                    axisConf.min =
+                        dataMin - padding;
+
+                    axisConf.max =
+                        dataMax + padding;
+                }
+            }
+
+            newScales[axisId] =
+                axisConf;
         }
+    );
 
-        newScales[axisId] = axisConf;
-    });
+    chart.options.scales =
+        newScales;
 
-    chart.options.scales = newScales;
     chart.update();
 }
 
-// Bootstrap — wait for WASM to be ready
+// Bootstrap — wait for WASM
 function onWasmReady() {
     STATE.wasmReady = true;
+
     bindUIElements();
     renderLegs();
     initChart();
@@ -608,25 +1454,49 @@ function onWasmReady() {
 // Emscripten Module callback
 if (typeof Module !== 'undefined') {
     if (Module.calledRun) {
-        // Already initialized
-        document.addEventListener('DOMContentLoaded', onWasmReady);
+        if (
+            document.readyState ===
+            'loading'
+        ) {
+            document.addEventListener(
+                'DOMContentLoaded',
+                onWasmReady
+            );
+        } else {
+            onWasmReady();
+        }
     } else {
-        Module.onRuntimeInitialized = () => {
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', onWasmReady);
-            } else {
-                onWasmReady();
-            }
-        };
+        Module.onRuntimeInitialized =
+            () => {
+                if (
+                    document.readyState ===
+                    'loading'
+                ) {
+                    document.addEventListener(
+                        'DOMContentLoaded',
+                        onWasmReady
+                    );
+                } else {
+                    onWasmReady();
+                }
+            };
     }
 } else {
     // Fallback: poll for Module
-    document.addEventListener('DOMContentLoaded', () => {
-        const check = setInterval(() => {
-            if (typeof Module !== 'undefined' && Module.calledRun) {
-                clearInterval(check);
-                onWasmReady();
-            }
-        }, 50);
-    });
+    document.addEventListener(
+        'DOMContentLoaded',
+        () => {
+            const check =
+                setInterval(() => {
+                    if (
+                        typeof Module !==
+                            'undefined' &&
+                        Module.calledRun
+                    ) {
+                        clearInterval(check);
+                        onWasmReady();
+                    }
+                }, 50);
+        }
+    );
 }
