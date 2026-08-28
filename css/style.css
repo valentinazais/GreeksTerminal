@@ -1,4 +1,4 @@
-/* --- TRADING TERMINAL AESTHETICS --- */
+/* --- AMUNDI LIGHT TERMINAL THEME --- */
 * {
     margin: 0;
     padding: 0;
@@ -6,38 +6,44 @@
 }
 
 :root {
-    /* Deep blacks and sharp greys */
-    --bg-base: #050507;
-    --bg-panel: #0a0a0d;
-    --bg-input: #121216;
-    --bg-hover: #1a1a20;
+    /* Amundi palette */
+    --amundi-navy: #00205b;
+    --amundi-blue: #00a3e0;
+    --amundi-blue-dark: #0077a8;
+    --amundi-blue-light: #e5f6fc;
 
-    --border-dim: #1d1d24;
-    --border-bright: #333340;
+    /* Backgrounds */
+    --bg-base: #ffffff;
+    --bg-panel: #f5f8fc;
+    --bg-input: #ffffff;
+    --bg-hover: #e5f6fc;
 
-    /* Neon Accents */
-    --accent-primary: #00ffcc;
-    /* Cyan */
-    --accent-secondary: #ff0055;
-    /* Magenta */
-    --accent-tertiary: #ccff00;
-    /* Lime */
+    /* Borders */
+    --border-dim: #d9e2ec;
+    --border-bright: #9db2ca;
+
+    /* Accents */
+    --accent-primary: #00a3e0;
+    --accent-secondary: #00205b;
+    --accent-tertiary: #0077a8;
 
     /* Text */
-    --text-main: #ffffff;
-    --text-muted: #6b6b80;
-    --text-alert: #ff3333;
+    --text-main: #00205b;
+    --text-muted: #60738d;
+    --text-dim: #8b9bb0;
+    --text-alert: #c62828;
+    --text-white: #ffffff;
 
-    /* Greeks Config */
-    --color-payoff: #ffffff;
-    --color-price: #00ffcc;
-    --color-delta: #33ff33;
-    --color-gamma: #cc33ff;
-    --color-vega: #ffcc00;
-    --color-theta: #ff3333;
-    --color-rho: #00ccff;
+    /* Greeks — blue-based palette */
+    --color-payoff: #00205b;
+    --color-price: #00a3e0;
+    --color-delta: #0077a8;
+    --color-gamma: #536fa8;
+    --color-vega: #3c91bd;
+    --color-theta: #c54e5c;
+    --color-rho: #69c4e5;
 
-    --font-mono: 'Inter', monospace;
+    --font-mono: "Inter", Arial, sans-serif;
 }
 
 body {
@@ -57,7 +63,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-base);
+    background: var(--bg-panel);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -84,7 +90,7 @@ body {
 .terminal-header {
     grid-area: header;
     background-color: var(--bg-base);
-    border-bottom: 1px solid var(--border-dim);
+    border-bottom: 4px solid var(--amundi-blue);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -98,13 +104,14 @@ body {
 }
 
 .logo-accent {
-    color: var(--accent-primary);
+    color: var(--amundi-blue);
     font-weight: 900;
     font-size: 16px;
     letter-spacing: 2px;
 }
 
 .terminal-header h1 {
+    color: var(--amundi-navy);
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 2px;
@@ -116,7 +123,7 @@ body {
     gap: 8px;
     font-size: 11px;
     font-weight: 600;
-    background: var(--bg-input);
+    background: var(--amundi-blue-light);
     padding: 4px 10px;
     border: 1px solid var(--border-dim);
 }
@@ -126,7 +133,7 @@ body {
 }
 
 .status-ok {
-    color: var(--accent-primary);
+    color: var(--amundi-blue-dark);
 }
 
 /* --- PANELS --- */
@@ -176,13 +183,13 @@ body {
 .panel-header h2 {
     font-size: 11px;
     font-weight: 700;
-    color: var(--text-muted);
+    color: var(--amundi-navy);
     letter-spacing: 1px;
 }
 
 .leg-count {
-    background: var(--accent-primary);
-    color: var(--bg-base);
+    background: var(--amundi-blue);
+    color: var(--text-white);
     padding: 2px 6px;
     font-size: 10px;
     font-weight: 800;
@@ -194,9 +201,10 @@ body {
 
 .section-title {
     font-size: 10px;
-    color: var(--text-muted);
+    color: var(--amundi-navy);
     margin-bottom: 12px;
     letter-spacing: 1px;
+    font-weight: 700;
 }
 
 /* --- FORM CONTROLS --- */
@@ -244,19 +252,23 @@ body {
     outline: none;
     transition: all 0.2s;
     border-radius: 0;
-    /* No bubbly borders */
     width: 100%;
+}
+
+.sharp-input:hover,
+.sharp-select:hover {
+    border-color: var(--border-bright);
 }
 
 .sharp-input:focus,
 .sharp-select:focus {
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 5px rgba(0, 255, 204, 0.2);
+    border-color: var(--amundi-blue);
+    box-shadow: 0 0 0 2px rgba(0, 163, 224, 0.15);
 }
 
-/* Hide arrow for number input */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
+/* Number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
@@ -277,10 +289,11 @@ input[type=number]::-webkit-outer-spin-button {
     font-size: 10px;
 }
 
+/* --- BUTTONS --- */
 .sharp-btn {
-    background: transparent;
-    border: 1px solid var(--border-bright);
-    color: var(--text-main);
+    background: var(--amundi-navy);
+    border: 1px solid var(--amundi-navy);
+    color: var(--text-white);
     padding: 10px;
     font-family: var(--font-mono);
     font-size: 11px;
@@ -293,14 +306,19 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .sharp-btn:hover {
-    background: var(--bg-hover);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
+    background: var(--amundi-blue);
+    border-color: var(--amundi-blue);
+    color: var(--text-white);
+}
+
+.sharp-btn:active {
+    background: var(--amundi-blue-dark);
+    border-color: var(--amundi-blue-dark);
 }
 
 .action-btn {
     margin-top: 5px;
-    background: var(--bg-input);
+    background: var(--amundi-navy);
 }
 
 /* --- PORTFOLIO LEGS --- */
@@ -319,10 +337,12 @@ input[type=number]::-webkit-outer-spin-button {
     background: var(--bg-base);
     border: 1px solid var(--border-dim);
     padding: 8px 12px;
-    border-left: 2px solid var(--border-bright);
+    border-left: 3px solid var(--border-bright);
+    transition: all 0.2s;
 }
 
 .leg-row:hover {
+    background: var(--amundi-blue-light);
     border-color: var(--border-bright);
 }
 
@@ -335,6 +355,7 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .leg-text {
+    color: var(--text-main);
     font-size: 11px;
     font-weight: 600;
 }
@@ -386,55 +407,55 @@ input[type=number]::-webkit-outer-spin-button {
     transition: all 0.2s;
 }
 
-/* Colors for active toggles */
-.metric-toggle input:checked+.toggle-box {
-    color: var(--bg-base);
+.metric-toggle:hover .toggle-box {
+    background: var(--amundi-blue-light);
+    border-color: var(--amundi-blue);
 }
 
-.tgl-payoff input:checked+.toggle-box {
+.metric-toggle input:checked + .toggle-box {
+    color: var(--text-white);
+}
+
+.tgl-payoff input:checked + .toggle-box {
     background: var(--color-payoff);
     border-color: var(--color-payoff);
-    color: var(--bg-base);
+    color: var(--text-white);
 }
 
-.tgl-price input:checked+.toggle-box {
+.tgl-price input:checked + .toggle-box {
     background: var(--color-price);
     border-color: var(--color-price);
-    color: var(--bg-base);
+    color: var(--text-white);
 }
 
-.tgl-delta input:checked+.toggle-box {
+.tgl-delta input:checked + .toggle-box {
     background: var(--color-delta);
     border-color: var(--color-delta);
-    color: var(--bg-base);
+    color: var(--text-white);
 }
 
-.tgl-gamma input:checked+.toggle-box {
+.tgl-gamma input:checked + .toggle-box {
     background: var(--color-gamma);
     border-color: var(--color-gamma);
-    color: var(--text-main);
+    color: var(--text-white);
 }
 
-.tgl-vega input:checked+.toggle-box {
+.tgl-vega input:checked + .toggle-box {
     background: var(--color-vega);
     border-color: var(--color-vega);
-    color: var(--bg-base);
+    color: var(--text-white);
 }
 
-.tgl-theta input:checked+.toggle-box {
+.tgl-theta input:checked + .toggle-box {
     background: var(--color-theta);
     border-color: var(--color-theta);
-    color: var(--text-main);
+    color: var(--text-white);
 }
 
-.tgl-rho input:checked+.toggle-box {
+.tgl-rho input:checked + .toggle-box {
     background: var(--color-rho);
     border-color: var(--color-rho);
-    color: var(--bg-base);
-}
-
-.metric-toggle:hover .toggle-box {
-    border-color: var(--border-bright);
+    color: var(--amundi-navy);
 }
 
 /* --- CHART AREA --- */
@@ -443,18 +464,19 @@ input[type=number]::-webkit-outer-spin-button {
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid var(--border-dim);
+    background: var(--bg-base);
 }
 
 .chart-title h2 {
     font-size: 14px;
     font-weight: 600;
-    color: var(--text-main);
+    color: var(--amundi-navy);
     letter-spacing: 1px;
 }
 
 .chart-title .subtitle {
     font-size: 10px;
-    color: var(--accent-primary);
+    color: var(--amundi-blue-dark);
     letter-spacing: 1px;
 }
 
@@ -463,6 +485,7 @@ input[type=number]::-webkit-outer-spin-button {
     padding: 20px;
     height: 450px;
     min-height: 350px;
+    background: var(--bg-base);
 }
 
 /* --- SLIDER CONTROLS --- */
@@ -484,7 +507,7 @@ input[type=number]::-webkit-outer-spin-button {
     appearance: none;
     width: 100%;
     height: 4px;
-    background: var(--bg-input);
+    background: var(--border-dim);
     border: 1px solid var(--border-dim);
     outline: none;
 }
@@ -494,72 +517,57 @@ input[type=number]::-webkit-outer-spin-button {
     appearance: none;
     width: 10px;
     height: 16px;
-    background: var(--accent-primary);
+    background: var(--amundi-blue);
     cursor: pointer;
+    border: 1px solid var(--amundi-blue-dark);
     border-radius: 0;
-    /* Keep it blocky */
 }
 
-/* --- 3RD ORDER GREEKS TOGGLES --- */
-.tgl-speed input:checked+.toggle-box {
-    background: #ffaa00;
-    border-color: #ffaa00;
-    color: var(--bg-base);
+.sharp-range::-moz-range-thumb {
+    width: 10px;
+    height: 16px;
+    background: var(--amundi-blue);
+    border: 1px solid var(--amundi-blue-dark);
+    border-radius: 0;
+    cursor: pointer;
 }
 
-.tgl-speed input:checked+.toggle-box .math-sub {
-    color: rgba(0, 0, 0, 0.6);
+/* --- 3RD ORDER GREEKS --- */
+.tgl-speed input:checked + .toggle-box {
+    background: #0077a8;
+    border-color: #0077a8;
+    color: var(--text-white);
 }
 
-.tgl-zomma input:checked+.toggle-box {
-    background: #00aaff;
-    border-color: #00aaff;
-    color: var(--bg-base);
+.tgl-zomma input:checked + .toggle-box {
+    background: #2494c3;
+    border-color: #2494c3;
+    color: var(--text-white);
 }
 
-.tgl-zomma input:checked+.toggle-box .math-sub {
-    color: rgba(0, 0, 0, 0.6);
+.tgl-color input:checked + .toggle-box {
+    background: #536fa8;
+    border-color: #536fa8;
+    color: var(--text-white);
 }
 
-.tgl-color input:checked+.toggle-box {
-    background: #ff00aa;
-    border-color: #ff00aa;
-    color: var(--bg-base);
+.tgl-ultima input:checked + .toggle-box {
+    background: #75c9e5;
+    border-color: #75c9e5;
+    color: var(--amundi-navy);
 }
 
-.tgl-color input:checked+.toggle-box .math-sub {
-    color: rgba(0, 0, 0, 0.6);
+/* --- 2ND ORDER CROSS GREEKS --- */
+.tgl-vanna input:checked + .toggle-box {
+    background: #008bc3 !important;
+    border-color: #008bc3 !important;
+    color: var(--text-white);
 }
 
-.tgl-ultima input:checked+.toggle-box {
-    background: #aaff00;
-    border-color: #aaff00;
-    color: var(--bg-base);
-}
-
-.tgl-ultima input:checked+.toggle-box .math-sub {
-    color: rgba(0, 0, 0, 0.6);
-}
-
-/* --- 2ND ORDER CROSS GREEKS TOGGLES (Vanna, Volga) --- */
-.tgl-vanna input:checked+.toggle-box {
-    background: #ff6600 !important;
-    border-color: #ff6600 !important;
-    color: var(--bg-base);
-}
-
-.tgl-vanna input:checked+.toggle-box .math-sub {
-    color: rgba(0, 0, 0, 0.6);
-}
-
-.tgl-volga input:checked+.toggle-box {
-    background: #aa00ff !important;
-    border-color: #aa00ff !important;
-    color: var(--text-main);
-}
-
-.tgl-volga input:checked+.toggle-box .math-sub {
-    color: rgba(255, 255, 255, 0.6);
+.tgl-volga input:checked + .toggle-box {
+    background: #3f5f99 !important;
+    border-color: #3f5f99 !important;
+    color: var(--text-white);
 }
 
 /* --- MATH NOTATION --- */
@@ -571,12 +579,18 @@ input[type=number]::-webkit-outer-spin-button {
     letter-spacing: 0;
 }
 
-.metric-toggle input:checked+.toggle-box .math-sub {
-    color: rgba(0, 0, 0, 0.6);
+.metric-toggle input:checked + .toggle-box .math-sub {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.tgl-rho input:checked + .toggle-box .math-sub,
+.tgl-ultima input:checked + .toggle-box .math-sub {
+    color: rgba(0, 32, 91, 0.7);
 }
 
 /* --- 3D SURFACE SECTION --- */
 .surface3d-section {
+    background: var(--bg-base);
     border-top: 1px solid var(--border-dim);
 }
 
@@ -617,7 +631,13 @@ input[type=number]::-webkit-outer-spin-button {
     background: var(--bg-base);
 }
 
-/* Barrier level visible transition */
 .barrier-level-cell {
     transition: all 0.2s ease;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1100px) {
+    .terminal-grid {
+        grid-template-columns: 260px minmax(500px, 1fr) 260px;
+    }
 }
