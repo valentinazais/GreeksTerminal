@@ -3,11 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <meta
         name="description"
@@ -16,11 +12,7 @@
 
     <title>Option Greeks Terminal</title>
 
-    <!-- Font -->
-    <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com"
-    >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
 
     <link
         rel="preconnect"
@@ -33,31 +25,16 @@
         rel="stylesheet"
     >
 
-    <!-- Application theme -->
-    <link
-        rel="stylesheet"
-        href="css/style.css?v=4"
-    >
-
-    <!-- Chart libraries -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
-        defer
-    ></script>
-
-    <script
-        src="https://cdn.plot.ly/plotly-2.27.0.min.js"
-        defer
-    ></script>
+    <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 
 <body>
+
     <div class="terminal-grid">
 
-        <!-- =====================================================
-             TOP HEADER
-             ===================================================== -->
+        <!-- HEADER -->
         <header class="terminal-header">
+
             <div class="logo-area">
                 <span class="logo-accent">///</span>
                 <h1>GREEKS TERMINAL</h1>
@@ -69,11 +46,10 @@
                     <span class="stat-val status-ok">CONNECTED</span>
                 </div>
             </div>
+
         </header>
 
-        <!-- =====================================================
-             LEFT PANEL — POSITIONS
-             ===================================================== -->
+        <!-- LEFT PANEL -->
         <aside class="panel left-panel">
 
             <div class="panel-header">
@@ -90,11 +66,9 @@
             <div
                 class="legs-list"
                 id="legs-container"
-            >
-                <!-- JavaScript injects portfolio legs here -->
-            </div>
+            ></div>
 
-            <!-- Structured products -->
+            <!-- STRUCTURED PRODUCT -->
             <div
                 class="panel-section add-leg-form"
                 style="
@@ -111,10 +85,15 @@
                     class="form-row"
                     style="align-items: flex-end;"
                 >
+
                     <div
                         class="input-cell"
                         style="flex-grow: 1;"
                     >
+                        <label for="structured-product-select">
+                            STRATEGY
+                        </label>
+
                         <select
                             id="structured-product-select"
                             class="sharp-select"
@@ -153,11 +132,13 @@
                     >
                         APPLY
                     </button>
+
                 </div>
             </div>
 
-            <!-- New position -->
+            <!-- NEW POSITION -->
             <div class="panel-section add-leg-form">
+
                 <h3 class="section-title">
                     NEW POSITION
                 </h3>
@@ -165,6 +146,7 @@
                 <div class="form-grid">
 
                     <div class="input-cell half">
+
                         <label for="new-leg-type">
                             TYPE
                         </label>
@@ -181,11 +163,13 @@
                                 PUT
                             </option>
                         </select>
+
                     </div>
 
                     <div class="input-cell half">
+
                         <label for="new-leg-position">
-                            POS
+                            POSITION
                         </label>
 
                         <select
@@ -200,14 +184,17 @@
                                 SHORT
                             </option>
                         </select>
+
                     </div>
 
                     <div class="input-cell full">
+
                         <label for="new-leg-strike">
                             STRIKE (K)
                         </label>
 
                         <div class="slider-input-group">
+
                             <input
                                 type="range"
                                 id="new-leg-strike-range"
@@ -222,13 +209,15 @@
                                 type="number"
                                 id="new-leg-strike"
                                 class="sharp-input"
-                                value="100.00"
+                                value="100"
                                 step="1"
                             >
+
                         </div>
                     </div>
 
                     <div class="input-cell full">
+
                         <label for="new-leg-barrier-type">
                             BARRIER
                         </label>
@@ -257,17 +246,20 @@
                                 DOWN-AND-OUT ↓OUT
                             </option>
                         </select>
+
                     </div>
 
                     <div
                         class="input-cell full barrier-level-cell"
                         style="display: none;"
                     >
+
                         <label for="new-leg-barrier">
                             BARRIER LEVEL (H)
                         </label>
 
                         <div class="slider-input-group">
+
                             <input
                                 type="range"
                                 id="new-leg-barrier-range"
@@ -285,6 +277,7 @@
                                 value="120"
                                 step="1"
                             >
+
                         </div>
                     </div>
 
@@ -295,17 +288,18 @@
                     >
                         APPEND LEG
                     </button>
+
                 </div>
             </div>
+
         </aside>
 
-        <!-- =====================================================
-             CENTER PANEL — CHARTS
-             ===================================================== -->
+        <!-- CENTER PANEL -->
         <main class="panel center-panel">
 
-            <!-- 2D chart -->
+            <!-- 2D CHART -->
             <div class="chart-header">
+
                 <div class="chart-title">
                     <h2>ANALYTICS ENGINE</h2>
 
@@ -313,14 +307,16 @@
                         MULTI-METRIC OVERLAY // UNDERLYING S
                     </span>
                 </div>
+
             </div>
 
             <div class="chart-wrapper">
                 <canvas id="greeksChart"></canvas>
             </div>
 
-            <!-- 3D surface -->
+            <!-- 3D SURFACE -->
             <section class="surface3d-section">
+
                 <div class="chart-header surface3d-header">
 
                     <div class="chart-title">
@@ -334,6 +330,7 @@
                     <div class="surface3d-controls">
 
                         <div class="input-cell">
+
                             <label for="surface-metric">
                                 GREEK
                             </label>
@@ -350,10 +347,7 @@
                                     PRICE
                                 </option>
 
-                                <option
-                                    value="delta"
-                                    selected
-                                >
+                                <option value="delta" selected>
                                     DELTA
                                 </option>
 
@@ -397,9 +391,11 @@
                                     VOLGA
                                 </option>
                             </select>
+
                         </div>
 
                         <div class="input-cell">
+
                             <label for="surface-variable">
                                 2ND AXIS
                             </label>
@@ -427,6 +423,7 @@
                                     YIELD Q
                                 </option>
                             </select>
+
                         </div>
 
                         <button
@@ -441,6 +438,7 @@
                         >
                             GENERATE
                         </button>
+
                     </div>
                 </div>
 
@@ -448,45 +446,39 @@
                     id="surface3d"
                     class="surface3d-container"
                 ></div>
+
             </section>
+
         </main>
 
-        <!-- =====================================================
-             RIGHT PANEL — ENVIRONMENT AND METRICS
-             ===================================================== -->
+        <!-- RIGHT PANEL -->
         <aside class="panel right-panel">
 
-            <div
-                class="panel-header"
-                style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                "
-            >
+            <!-- ENVIRONMENT HEADER -->
+            <div class="panel-header">
+
                 <h2>ENVIRONMENT</h2>
 
                 <button
                     id="btn-env-reset"
-                    class="action-btn"
+                    class="sharp-btn"
                     type="button"
                     style="
-                        padding: 2px 8px;
-                        font-size: 0.7rem;
-                        background: var(--bg-panel);
-                        color: var(--text-muted);
-                        border: 1px solid var(--border-dim);
-                        cursor: pointer;
+                        width: auto;
+                        padding: 4px 9px;
+                        font-size: 10px;
                     "
                 >
                     RESET
                 </button>
+
             </div>
 
-            <!-- Global parameters -->
+            <!-- GLOBAL PARAMETERS -->
             <div class="panel-section global-params">
 
                 <div class="input-cell full">
+
                     <label>
                         SPOT HORIZON (MIN - MAX)
                     </label>
@@ -494,6 +486,7 @@
                     <div class="range-group">
 
                         <div class="slider-input-col">
+
                             <input
                                 type="range"
                                 id="global-min-price-range"
@@ -511,11 +504,13 @@
                                 value="50"
                                 step="1"
                             >
+
                         </div>
 
                         <span class="separator">-</span>
 
                         <div class="slider-input-col">
+
                             <input
                                 type="range"
                                 id="global-max-price-range"
@@ -533,16 +528,19 @@
                                 value="150"
                                 step="1"
                             >
+
                         </div>
                     </div>
                 </div>
 
                 <div class="input-cell full">
+
                     <label for="global-t">
                         EXPIRY T (YRS)
                     </label>
 
                     <div class="slider-input-group">
+
                         <input
                             type="range"
                             id="global-t-range"
@@ -560,105 +558,120 @@
                             value="1.00"
                             step="0.01"
                         >
+
                     </div>
                 </div>
 
                 <div class="form-row">
 
                     <div class="input-cell half">
+
                         <label for="global-r">
                             RATE (R) %
                         </label>
 
                         <div class="slider-input-group">
+
                             <input
                                 type="range"
                                 id="global-r-range"
                                 class="sharp-range"
-                                min="0.0"
-                                max="20.0"
+                                min="0"
+                                max="20"
                                 step="0.1"
-                                value="5.0"
+                                value="5"
                             >
 
                             <input
                                 type="number"
                                 id="global-r"
                                 class="sharp-input"
-                                value="5.0"
+                                value="5"
                                 step="0.1"
                             >
+
                         </div>
                     </div>
 
                     <div class="input-cell half">
+
                         <label for="global-q">
                             YIELD (Q) %
                         </label>
 
                         <div class="slider-input-group">
+
                             <input
                                 type="range"
                                 id="global-q-range"
                                 class="sharp-range"
-                                min="0.0"
-                                max="20.0"
+                                min="0"
+                                max="20"
                                 step="0.1"
-                                value="0.0"
+                                value="0"
                             >
 
                             <input
                                 type="number"
                                 id="global-q"
                                 class="sharp-input"
-                                value="0.0"
+                                value="0"
                                 step="0.1"
                             >
+
                         </div>
                     </div>
+
                 </div>
 
                 <div class="input-cell full">
+
                     <label for="global-v">
                         VOLATILITY (σ) %
                     </label>
 
                     <div class="slider-input-group">
+
                         <input
                             type="range"
                             id="global-v-range"
                             class="sharp-range"
-                            min="1.0"
-                            max="100.0"
+                            min="1"
+                            max="100"
                             step="0.1"
-                            value="20.0"
+                            value="20"
                         >
 
                         <input
                             type="number"
                             id="global-v"
                             class="sharp-input"
-                            value="20.0"
+                            value="20"
                             step="0.1"
                         >
+
                     </div>
                 </div>
+
             </div>
 
-            <!-- Parameter sweep -->
+            <!-- PARAMETER SWEEP -->
             <div class="panel-header secondary-header">
                 <h2>PARAMETER SWEEP</h2>
             </div>
 
             <div class="panel-section animation-controls">
+
                 <div
                     class="form-row"
                     style="align-items: flex-end;"
                 >
+
                     <div
                         class="input-cell"
                         style="flex-grow: 1;"
                     >
+
                         <label for="anim-param-select">
                             ANIMATE VARIABLE
                         </label>
@@ -683,6 +696,7 @@
                                 YIELD (Q) %
                             </option>
                         </select>
+
                     </div>
 
                     <button
@@ -697,10 +711,11 @@
                     >
                         PLAY
                     </button>
+
                 </div>
             </div>
 
-            <!-- Active metrics -->
+            <!-- ACTIVE METRICS -->
             <div class="panel-header secondary-header">
                 <h2>ACTIVE METRICS</h2>
             </div>
@@ -790,23 +805,16 @@
                     </span>
                 </label>
 
-                <!-- Second-order Greeks -->
+                <!-- SECOND ORDER -->
                 <div
                     class="panel-header secondary-header"
                     style="
                         margin-top: 15px;
                         margin-bottom: 10px;
-                        padding-bottom: 5px;
+                        padding: 5px 0;
                     "
                 >
-                    <h2
-                        style="
-                            font-size: 0.70rem;
-                            color: var(--text-muted);
-                        "
-                    >
-                        2ND ORDER CROSS
-                    </h2>
+                    <h2>2ND ORDER CROSS</h2>
                 </div>
 
                 <label class="metric-toggle tgl-vanna">
@@ -833,23 +841,16 @@
                     </span>
                 </label>
 
-                <!-- Third-order Greeks -->
+                <!-- THIRD ORDER -->
                 <div
                     class="panel-header secondary-header"
                     style="
                         margin-top: 15px;
                         margin-bottom: 10px;
-                        padding-bottom: 5px;
+                        padding: 5px 0;
                     "
                 >
-                    <h2
-                        style="
-                            font-size: 0.70rem;
-                            color: var(--text-muted);
-                        "
-                    >
-                        3RD ORDER GREEKS
-                    </h2>
+                    <h2>3RD ORDER GREEKS</h2>
                 </div>
 
                 <label class="metric-toggle tgl-speed">
@@ -899,18 +900,29 @@
                         <span class="math-sub">∂³V/∂σ³</span>
                     </span>
                 </label>
+
             </div>
+
         </aside>
+
     </div>
 
     <!--
-        Load order is important:
-        1. Chart.js and Plotly are loaded in <head> with defer.
-        2. Emscripten/WASM loader.
-        3. Application logic.
+        ORDRE OBLIGATOIRE :
+        1. Chart.js
+        2. Plotly
+        3. WASM / Emscripten
+        4. Application
     -->
-    <script src="js/greeks.js?v=4"></script>
-    <script src="js/app.js?v=4"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <script src="js/greeks.js?v=6"></script>
+
+    <script src="js/app.js?v=6"></script>
+
 </body>
 
 </html>
